@@ -1,24 +1,32 @@
-import logo from './logo.svg';
 import './App.css';
+import {useState} from 'react'
+import {database} from './firebase.js'
+import { ref, set } from "firebase/database";
 
 function App() {
+  const [name , setName] = useState();
+  const [age , setAge] = useState();
+      
+  // Push Function
+  function Push() {
+    set(ref(database, 'users'), {
+      name,
+      age
+    });
+  }
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <div className="App" style={{marginTop : 250}}>
+    <center>
+    <input placeholder="Enter your name" value={name} 
+    onChange={(e) => setName(e.target.value)}/>
+    <br/><br/>
+    <input placeholder="Enter your age" value={age} 
+    onChange={(e) => setAge(e.target.value)}/>
+    <br/><br/> 
+    <button onClick={Push}>PUSH</button>
+    </center>
+  </div>
   );
 }
 
