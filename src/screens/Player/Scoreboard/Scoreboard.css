@@ -1,0 +1,6 @@
+.tables{
+  background: var(--bg-table) center center/cover no-repeat;
+  border: 0.25rem solid var(--btn-bg-border);
+  margin-top: 0.5rem;
+  position: relative;
+}

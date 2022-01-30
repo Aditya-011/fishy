@@ -1,0 +1,22 @@
+.fade-animation {
+    animation: fade 4s linear;
+}
+  
+@keyframes fade {
+    0%,
+    100% {
+        opacity: 0;
+    }
+    25%,
+    50%,
+    75% {
+        opacity: 1;
+    }
+}
+
+.intro-screen {
+    justify-content: center;
+    height: 80vh;
+    transform: translateX(-20px);
+}
+  

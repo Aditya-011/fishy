@@ -1,0 +1,4 @@
+.host-btn .button:hover {
+  background: var(--primary-text);
+  color: var(--btn-bg-secondary);
+}

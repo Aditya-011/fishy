@@ -1,0 +1,48 @@
+.icon-btn {
+  padding: 0;
+  border-radius: 1.25rem;
+  background: var(--bg-icon) center center / cover no-repeat;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--fs-500);
+  font-weight: var(--fw-700);
+  color: var(--primary-text);
+  letter-spacing: 1px;
+  border: 0.275rem solid var(--btn-bg-border);
+  border-radius: var(--br);
+}
+
+.icon-btn img {
+  max-width: 150%;
+  height: 3.15rem;
+  pointer-events: none;
+}
+
+.icon-btn.rules {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.icon-btn.rules img {
+  padding: 0.375em;
+  pointer-events: none;
+}
+
+.icon-btn.quit {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.icon-btn.quit img {
+  padding: 0.375em;
+  pointer-events: none;
+}
+
+.icon-btn.settings {
+  border: none;
+}
+
+.icon-btn.refresh {
+  border: none;
+}

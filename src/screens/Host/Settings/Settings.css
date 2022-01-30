@@ -1,0 +1,18 @@
+.inp {
+  flex-basis: 50%;
+  background: var(--neutral);
+  border: 3px solid var(--btn-bg-secondary);
+  padding: 1rem;
+  color: var(--btn-bg-secondary);
+  border-radius: var(--br);
+}
+
+.settings .btn {
+  color: var(--btn-bg-secondary);
+  font-weight: 500;
+}
+
+.settings .btn:hover {
+  color: var(--btn-bg-secondary);
+  background: #fdc740;
+}

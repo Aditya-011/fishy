@@ -1,0 +1,78 @@
+.inner-div {
+  width: 18rem;
+  position: relative;
+}
+
+.inner-div .icon-btn {
+  position: absolute;
+  right: 0rem;
+  top: 8rem;
+  height: 3.28rem;
+  z-index: 1;
+}
+
+@media screen and (max-width: 424px) {
+  .inner-div .icon-btn {
+    position: absolute;
+    right: 3rem;
+    top: 7rem;
+    height: 2.78rem;
+    z-index: 1;
+  }
+}
+
+@media screen and (min-width: 425px) and (max-width: 600px) {
+  .inner-div .icon-btn {
+    position: absolute;
+    right: 1.5rem;
+    top: 8rem;
+    height: 3rem;
+    z-index: 1;
+  }
+}
+
+@media screen and (min-width: 601px) and (max-width: 767px) {
+  .inner-div .icon-btn {
+    position: absolute;
+    right: 2.5rem;
+    top: 8rem;
+    height: 3rem;
+    z-index: 1;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .inner-div .icon-btn {
+    position: absolute;
+    right: 0rem;
+    top: 8rem;
+    height: 3rem;
+    z-index: 1;
+  }
+  .inner-div {
+    width: 12rem;
+    position: relative;
+  }
+}
+
+@media screen and (min-width: 1024px) and (max-width: 1280px) {
+  .inner-div .icon-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 8rem;
+    height: 3rem;
+    z-index: 1;
+  }
+  .inner-div {
+    width: 16rem;
+    position: relative;
+  }
+}
+
+.reveal .inner-div .icon-btn {
+  transform: translateY(-2rem);
+}
+
+.reveal .deck {
+  margin-top: auto;
+}

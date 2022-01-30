@@ -1,0 +1,231 @@
+.box {
+    background: var(--bg-card) center center/cover no-repeat;
+    border: 0.45rem solid var(--btn-bg-border);
+    border-radius: calc(var(--br) * 1.25);
+    position: relative;
+    width: 16rem;
+    height: 20rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+
+.one::before,
+.two::before,
+.toggle-one::before,
+.toggle-two::before {
+  content: "";
+  position: absolute;
+  width: 90%;
+  height: 8.25rem;
+  top: 1rem;
+  left: 0.575rem;
+  z-index: 2;
+}
+
+.two::before,
+.toggle-two::before {
+  height: 8.25rem;
+  top: 10rem;
+}
+
+
+
+.toggle-one::before,
+.toggle-two::before {
+  border: 3px solid var(--btn-bg-border);
+}
+
+.one::before,
+.two::before {
+  border: 3px solid var(--primary-text);
+}
+
+
+  @media screen and (max-width:424px){
+    .box {
+        background: var(--bg-card) center center/cover no-repeat;
+        border: 0.45rem solid var(--btn-bg-border);
+        border-radius: calc(var(--br) * 1.25);
+        position: relative;
+        width: 9rem;
+        height: 12rem;
+        margin-left: 10px;
+        flex-grow:1;
+      }
+    .title-card{
+        margin-left:10px;
+    }
+   
+  .one::before,
+  .two::before, 
+  .toggle-one::before,
+  .toggle-two::before {
+    content: "";
+    position: absolute;
+    width: 90%;
+    height: 4.25rem;
+    left: 0.575rem;
+    z-index: 2;
+  }
+
+  .two::before,
+  .toggle-two::before {
+    top:10rem;
+    height: 9.5rem;
+  }
+
+
+
+  .toggle-one::before,
+  .toggle-two::before {
+    border: 3px solid var(--btn-bg-border);
+  }
+}
+
+@media screen and (min-width: 425px) and (max-width:600px){
+    .box {
+        align-self:center;
+        background: var(--bg-card) center center/cover no-repeat;
+        border: 0.45rem solid var(--btn-bg-border);
+        border-radius: calc(var(--br) * 1.25);
+        position: relative;
+        width: 11rem;
+        height: 12rem;
+        margin-left: 10px;
+        flex-grow:1;
+      }
+    .title-card{
+        margin-left:10px;
+    }
+    .one::before,
+    .two::before,
+    .toggle-one::before,
+    .toggle-two::before {
+      content: "";
+      position: absolute;
+      width: 90%;
+      height: 4.25rem;
+      top: 10rem;
+      left: 0.575rem;
+      z-index: 2;
+    }
+
+    .two::before,
+    .toggle-two::before {
+      height: 10rem;
+    }
+
+
+
+    .toggle-one::before,
+    .toggle-two::before {
+      border: 3px solid var(--btn-bg-border);
+    }
+}
+
+@media screen and (min-width: 601px) and (max-width:767px){
+    .box {
+        align-self:center;
+        background: var(--bg-card) center center/cover no-repeat;
+        border: 0.45rem solid var(--btn-bg-border);
+        border-radius: calc(var(--br) * 1.25);
+        position: relative;
+        width: 10rem;
+        height: 12rem;
+        flex-grow:1;
+      }
+    .one::before,
+    .two::before,
+    .toggle-one::before,
+    .toggle-two::before {
+      content: "";
+      position: absolute;
+      width: 90%;
+      height: 4.25rem;
+      top: 1rem;
+      left: 0.575rem;
+      z-index: 2;
+    }
+
+    .two::before,
+    .toggle-two::before {
+      top: 10rem;
+      height: 10rem;
+    }
+
+
+
+    .toggle-one::before,
+    .toggle-two::before {
+      border: 3px solid var(--btn-bg-border);
+    }
+}
+
+@media screen and (min-width: 768px) and (max-width:1024px){
+    .box {
+        align-self:center;
+        background: var(--bg-card) center center/cover no-repeat;
+        border: 0.45rem solid var(--btn-bg-border);
+        border-radius: calc(var(--br) * 1.25);
+        position: relative;
+        width: 10.5rem;
+        height: 12rem;
+        flex-grow:1;
+      }
+
+    .one::before,  
+    .two::before,
+    .toggle-one::before,
+    .toggle-two::before {
+      content: "";
+      position: absolute;
+      width: 90%;
+      height: 4.25rem;
+      left: 0.575rem;
+      z-index: 2;
+    }
+
+    .two::before,
+    .toggle-two::before {
+      top: 10rem;
+      height: 10rem;
+    }
+
+
+
+    .toggle-one::before,
+    .toggle-two::before {
+      border: 3px solid var(--btn-bg-border);
+    }
+}
+
+@media screen and (min-width: 1024px) and (max-width:1280px){
+    .box {
+        align-self:center;
+        background: var(--bg-card) center center/cover no-repeat;
+        border: 0.45rem solid var(--btn-bg-border);
+        border-radius: calc(var(--br) * 1.25);
+      }
+
+      .one::before,
+      .two::before,
+      .toggle-one::before,
+      .toggle-two::before {
+        content: "";
+        position: absolute;
+        width: 90%;
+        height: 6.25rem;
+        top: 1rem;
+        left: 0.575rem;
+        z-index: 2;
+      }
+      
+      .two::before,
+      .toggle-two::before {
+        top: 7rem;
+        height: 6rem;
+      }
+}
+

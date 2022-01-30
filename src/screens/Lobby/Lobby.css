@@ -1,0 +1,12 @@
+.room-code > h1{
+    padding: 0.85rem 4rem;
+    margin-top: 2rem;
+    width: auto;
+    font-size: var(--fs-500);
+    background-size: cover;
+    background-position: center;
+}
+
+.list-none > li > h1{
+    font-size: var(--fs-400);
+}

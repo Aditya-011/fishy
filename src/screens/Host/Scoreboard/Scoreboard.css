@@ -1,0 +1,20 @@
+.tables{
+  background: var(--bg-table) center center/cover no-repeat;
+  border: 0.25rem solid var(--btn-bg-border);
+  margin-top: 0.5rem;
+  position: relative;
+}
+
+.tables .show-hidden-table {
+  position: absolute;
+  max-height: 50px;
+  max-width: 50px;
+  top: 0.5rem;
+  left: 1rem;
+}
+
+
+.tables .show-hidden-table .icon-btn {
+  background: none;
+  border: none;
+}
