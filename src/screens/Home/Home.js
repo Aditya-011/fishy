@@ -1,11 +1,13 @@
 import React, {useEffect} from 'react'
 import './Home.css'
 import logo from '../../images/logo.png'
-const Home = () => {
+import { useNavigate } from "react-router-dom";
 
+const Home = () => {
+    const navigate = useNavigate()
     useEffect(() => {
         setTimeout(() => {
-            window.location.href = '/game'
+          navigate('/game')
         }, 4000);
     })
     

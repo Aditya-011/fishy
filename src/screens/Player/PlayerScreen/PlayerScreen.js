@@ -1,35 +1,39 @@
 import React, { useState, useEffect, useContext } from "react";
 import Button from "../../../components/Button/Button";
-import { SocketContext } from "../../../context/SocketContext";
+import { UserContext } from '../../../context/context';
 import "./PlayerScreen.css";
-
+import { database as db } from "../../../firebase";
+import { ref, child, get, push, update } from "firebase/database";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 const PlayerScreen = () => {
-  const socket = useContext(SocketContext);
+  const navigate = useNavigate()
+  const userID = useContext(UserContext);
   const [inputCode, setInputCode] = useState("");
   const [playerName, setPlayerName] = useState("");
-  const [code, correctCode] = useState(false);
   useEffect(() => {
     sessionStorage.setItem("status", 0);
-    socket.on("error", ({ message }) => {
+    console.log(userID);
+    /*   socket.on("error", ({ message }) => {
       if (!code) {
         alert(message);
         correctCode(true);
       }
-    });
-  }, [socket, code]);
+    });*/
+  }, []);
 
-  const handlegameLink = e => {
+  /*const handlegameLink = e => {
     let xCode=e.target.value;
     let result = xCode.toLocaleUpperCase();
     setInputCode(result);
   };
-
-  const handleName = e => {
+*/
+  /* const handleName = e => {
     setPlayerName(e.target.value);
-  };
+  };*/
 
-  const enterGame = () => {
-    console.log("Enter game");
+  const enterGame = async () => {
+    /* console.log("Enter game");
     console.log(socket.id);
     socket.emit("authenticate", { inputCode, playerName, id: socket.id });
     socket.on("authenticated", value => {
@@ -47,6 +51,46 @@ const PlayerScreen = () => {
     });
     socket.on("change", ({ message }) => alert(message));
     sessionStorage.setItem("playerName", playerName);
+    */
+
+    // check for room in rdb
+    if (inputCode.length && playerName.length) {
+      const dbRef = ref(db);
+      console.log(inputCode);
+      get(child(dbRef, `sessions/${inputCode}`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            console.log(snapshot.val());
+            const newUser = {
+              name: playerName,
+              role: "player",
+              rounds : [
+               
+              ]
+            };
+            const newPostKey = push(
+              child(ref(db), `sessions/${inputCode}/users`)
+            ).key;
+           
+            console.log(`key ${newPostKey}`);
+            const updates = {};
+            updates[`sessions/${inputCode}/users/` + userID] = newUser;
+            update(ref(db), updates);
+
+             //window.location.href = `/lobby/${inputCode}`;
+             navigate(`/lobby/${inputCode}`)
+
+          } else {
+            console.log("No data available");
+            toast.error("Lobby doesnot exist");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          toast.error(error);
+        });
+      console.log("enter game");
+    }
   };
 
   return (
@@ -63,7 +107,7 @@ const PlayerScreen = () => {
           placeholder="Eg:12345"
           value={inputCode}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          onChange={e => handlegameLink(e)}
+          onChange={(e) => setInputCode(e.target.value)}
           required
         ></input>
       </div>
@@ -79,7 +123,7 @@ const PlayerScreen = () => {
           type="text"
           placeholder="Eg:David"
           value={playerName}
-          onChange={e => handleName(e)}
+          onChange={(e) => setPlayerName(e.target.value)}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           required
         ></input>
