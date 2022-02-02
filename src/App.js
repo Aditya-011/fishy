@@ -1,5 +1,5 @@
 import './App.css'
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 
 import { SocketContext, socket } from './context/SocketContext';
 import { UserContext } from './context/context';
@@ -10,8 +10,10 @@ import { v4 as uuidv4 } from "uuid";
 
 
 function App() {
- const userID = uuidv4()
-  console.log(userID);
+  const [userID, setuserID] = useState('');
+ useEffect(() => {
+ setuserID(uuidv4())
+ }, []);
 const [code, setcode] = useState('');
   return (
     <SocketContext.Provider value = {socket}>
