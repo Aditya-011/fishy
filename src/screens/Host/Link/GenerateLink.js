@@ -15,7 +15,7 @@ import "./GenerateLink.css";
 import Refresh from "../../../images/refresh.png";
 import SettingIcon from "../../../images/settings.png";
 import { database as db } from "../../../firebase";
-import { ref, set, get, child } from "firebase/database";
+import { ref, set, get, child ,push,update} from "firebase/database";
 
 const GenerateLink = ({ code, setcode }) => {
   const userID = useContext(UserContext);
@@ -50,17 +50,32 @@ const GenerateLink = ({ code, setcode }) => {
     console.log(userID);
 
     set(ref(db, "sessions/" + code), {
-      users: {
+     /* users: {
         [userID]: {
           name: "Logan",
           role: "host",
         },
-      },
+      },*/
       properties: {
         timer,
+        host : {
+          userID,
+          name: "Logan",
+        }
       },
     });
-
+    set(ref(db, "sessionData/" + code), {
+      state :{
+        r1 : [0,1,2,3,4,5,6,7,8,9]
+      }
+     });
+     const newPostKey = push(child(ref(db), 'users')).key;
+     const updates = {};
+     updates['users/'] = { [userID] :{
+      name: "logan"
+     }};
+      update(ref(db), updates);
+    
     console.log("host added");
   };
   function generateCode(length) {

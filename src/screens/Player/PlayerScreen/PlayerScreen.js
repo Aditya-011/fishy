@@ -71,12 +71,20 @@ const PlayerScreen = () => {
             const newPostKey = push(
               child(ref(db), `sessions/${inputCode}/users`)
             ).key;
+            const newUserKey =  push(
+              child(ref(db), `users`)
+            ).key;
+            const addUser={}
            
-            console.log(`key ${newPostKey}`);
+           // console.log(`key ${newPostKey}`);
             const updates = {};
             updates[`sessions/${inputCode}/users/` + userID] = newUser;
-            update(ref(db), updates);
-
+              updates[`users/`+userID] = {[userID]:
+              {
+                name: playerName
+              }};
+              update(ref(db), updates);
+            
              //window.location.href = `/lobby/${inputCode}`;
              navigate(`/lobby/${inputCode}`)
 

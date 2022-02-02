@@ -23,7 +23,7 @@ const Lobby = () => {
   const socket = useContext(SocketContext);
   let { id } = useParams();
   var Players;
-  const lobby = JSON.parse(sessionStorage.getItem('lobby'))
+  const lobby = JSON.parse(sessionStorage.getItem("lobby"));
   const [isLoading, setIsLoading] = useState(false);
   const [players, setPlayers] = useState([]);
   const userID = useContext(UserContext);
@@ -31,23 +31,24 @@ const Lobby = () => {
   const clickHandler = () => {
     socket.emit("start-game", sessionStorage.getItem("game-code"));
   };
-  const getUsers =  () => {
+  const getUsers = () => {
     const starCountRef = ref(db, "sessions/" + id + "/users");
-    onValue(starCountRef,  (snapshot) => {
-      Players =  Object.values(snapshot.val());
+    onValue(starCountRef, (snapshot) => {
+      if(snapshot.val())
+     { Players = Object.values(snapshot.val());
       console.log(Players);
-      if(Players){setPlayers(Players)}
+      if (Players) {
+        setPlayers(Players);
+      }}
     });
   };
-  
-  
+
   //getUsers()
   useEffect(() => {
     console.log(userID);
-    getUsers()
+    getUsers();
     //console.log(lobby);
   }, []);
-
 
   return (
     <div className="flex flex-col items-center justify-center h-full pt-2">
@@ -58,15 +59,15 @@ const Lobby = () => {
         <FlashCard text={`Room Code : ${id}`} />
       </div>
       <ul className="list-none inline-flex self-center justify-center items-center xs-mobile:flex-wrap md:flex-nowrap">
-        {
-        players.map((player, index) => (
-          <li key={index} className={"inline-block mt-4 p-3"}>
-            <FlashCard text={player.name} />
-          </li>
-        ))
-    }
+        {players
+          ? players.map((player, index) => (
+              <li key={index} className={"inline-block mt-4 p-3"}>
+                <FlashCard text={player.name} />
+              </li>
+            ))
+          : console.log(1)}
       </ul>
-      {/*status === 1 && players.length === 4 ? (
+      { players.length === 4 ? (
         <Link
           to={{
             pathname: `/round/${1}`,
@@ -81,7 +82,7 @@ const Lobby = () => {
             clickHandler={clickHandler}
           />
         </Link>
-        ) : null*/}
+        ) : null}
     </div>
   );
 };
