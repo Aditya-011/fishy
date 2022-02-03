@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import {
     BrowserRouter ,
     Routes as Router,
@@ -16,8 +16,13 @@ import Scoreboard from './screens/Host/Scoreboard/Scoreboard';
 import PlayerScoreboard from './screens/Player/Scoreboard/Scoreboard';
 import Endgame from './screens/Endgame/Endgame';
 import Waiting from './screens/Waiting/Waiting';
+import { ref, onValue} from "firebase/database";
+import {database as db} from './firebase'
+
 
 const Routes = ({code,setcode}) => {
+ useEffect(() => {
+ }, []);
   return <div>
         <BrowserRouter>
       <Router>

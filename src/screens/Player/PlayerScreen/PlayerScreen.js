@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 const PlayerScreen = () => {
   const navigate = useNavigate()
-  const userID = useContext(UserContext);
+  const {userID} = useContext(UserContext);
   const [inputCode, setInputCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   useEffect(() => {

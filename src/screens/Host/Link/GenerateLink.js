@@ -18,7 +18,7 @@ import { database as db } from "../../../firebase";
 import { ref, set, get, child ,push,update} from "firebase/database";
 
 const GenerateLink = ({ code, setcode }) => {
-  const userID = useContext(UserContext);
+  const {userID} = useContext(UserContext);
   const [settings, showSettings] = useState(false);
   const [rules, showRules] = useState(false);
   const [timer, setTimer] = useState(120);
@@ -69,12 +69,10 @@ const GenerateLink = ({ code, setcode }) => {
         r1 : [0,1,2,3,4,5,6,7,8,9]
       }
      });
-     const newPostKey = push(child(ref(db), 'users')).key;
-     const updates = {};
-     updates['users/'] = { [userID] :{
-      name: "logan"
-     }};
-      update(ref(db), updates);
+    // const newPostKey = push(child(ref(db), 'users')).key;
+    set(ref(db, 'users/' + userID), {
+      name : "logan"
+    });
     
     console.log("host added");
   };

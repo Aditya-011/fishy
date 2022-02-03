@@ -3,7 +3,7 @@ import { SocketContext } from "../../context/SocketContext";
 import FlashCard from "../../components/Flashcard/Flashcard";
 import Button from "../../components/Button/Button";
 import { Link, useParams } from "react-router-dom";
-import { UserContext } from "../../context/context";
+import { UserContext,AuthContext } from "../../context/context";
 import "./Lobby.css";
 import { database as db } from "../../firebase";
 import {
@@ -17,39 +17,57 @@ import {
   onSnapshot,
   doc,
 } from "firebase/database";
-import { logDOM } from "@testing-library/react";
 
 const Lobby = () => {
   const socket = useContext(SocketContext);
+  const {auth,setAuth}= useContext(AuthContext)
   let { id } = useParams();
   var Players;
+  var Properties;
   const lobby = JSON.parse(sessionStorage.getItem("lobby"));
-  const [isLoading, setIsLoading] = useState(false);
   const [players, setPlayers] = useState([]);
-  const userID = useContext(UserContext);
+  const {userID} = useContext(UserContext);
   let status = Number(sessionStorage.getItem("status"));
   const clickHandler = () => {
     socket.emit("start-game", sessionStorage.getItem("game-code"));
   };
+  const getRoomProperties = () => {
+    const starCountRef = ref(db, `sessions/${id}/properties`);
+    onValue(starCountRef, (snapshot) => {
+      console.log(snapshot.val());
+      if (snapshot.val()) {
+        Properties = snapshot.val();
+        if (snapshot.val().host.userID === userID) {
+          setAuth(true); // console.log(properties);
+        }
+      }
+    });
+  };
   const getUsers = () => {
     const starCountRef = ref(db, "sessions/" + id + "/users");
     onValue(starCountRef, (snapshot) => {
-      if(snapshot.val())
-     { Players = Object.values(snapshot.val());
-      console.log(Players);
-      if (Players) {
-        setPlayers(Players);
-      }}
+      if (snapshot.val()) {
+        Players = Object.values(snapshot.val());
+        console.log(Players);
+        if (Players) {
+          setPlayers(Players);
+        }
+      }
     });
   };
 
   //getUsers()
   useEffect(() => {
     console.log(userID);
+  
     getUsers();
+    console.log(auth);
     //console.log(lobby);
   }, []);
-
+useEffect(() => {
+  getRoomProperties();
+  //console.log(auth);
+}, [players]);
   return (
     <div className="flex flex-col items-center justify-center h-full pt-2">
       <div className="">
@@ -67,7 +85,7 @@ const Lobby = () => {
             ))
           : console.log(1)}
       </ul>
-      { players.length === 4 ? (
+      { auth ? (
         <Link
           to={{
             pathname: `/round/${1}`,
@@ -82,7 +100,7 @@ const Lobby = () => {
             clickHandler={clickHandler}
           />
         </Link>
-        ) : null}
+      ) : null}
     </div>
   );
 };
