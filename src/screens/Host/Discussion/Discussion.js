@@ -11,11 +11,14 @@ import Pause from "../../../images/pause.png";
 import Resume from "../../../images/resume.png";
 import Icons from "../../../components/Icons/Icons";
 import ChoiceAndSubmit from "../ChoiceAndSubmit/ChoiceAndSubmit";
+import { set,ref } from "firebase/database";
+import { database as db } from "../../../firebase";
+import { UserContext } from "../../../context/context";
 import "./Discussion.css";
 
 const Discussion = () => {
   const roundNo = useParams();
-  const code = sessionStorage.getItem("game-code");
+  const {code} = useContext(UserContext)
   const timeP = useRef(120);
   const socket = useContext(SocketContext);
   const [time, setTime] = useState(120);
@@ -37,7 +40,7 @@ const Discussion = () => {
   };
 
   useEffect(() => {
-    socket.emit("join-host", code);
+   /* socket.emit("join-host", code);
     socket.on("toggled", playerData => {
       setPlayerInfo(playerData);
     });
@@ -72,11 +75,18 @@ const Discussion = () => {
     }
 
     socket.on("pause-status", bool => setMode(bool));
-    socket.on("player-values", players => setPlayerInfo(players));
-  }, [socket, code]);
+    socket.on("player-values", players => setPlayerInfo(players));*/
+    console.log(code);
+    set(ref(db, "sessionData/" + code), {
+      hostProperties:{
+        startTime: '',
+        stopTimer :false
+      },
+     });
+  }, []);
 
   useEffect(() => {
-    if (sessionStorage.getItem("time-format")) {
+  /*  if (sessionStorage.getItem("time-format")) {
       if (sessionStorage.getItem("time-val")) {
         setTime(Number(sessionStorage.getItem("time-val")));
         setTimeFormat(sessionStorage.getItem("time-format"));
@@ -123,13 +133,12 @@ const Discussion = () => {
     return () => {
       clearInterval(timerRef.current);
       active = true;
-    };
+    };*/
   }, [timerRef, time, mode]);
 
   const selectChoice = (num, playerName) => {
     // num === 1 ? setActive([true, false]) : setActive([false, true]);
     // setChoice(num)
-    console.log(playerName, num);
     socket.emit("submit", { choice: num, playerName, code });
   };
 

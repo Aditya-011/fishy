@@ -18,7 +18,7 @@ function App() {
 const [code, setcode] = useState('');
   return (
     <SocketContext.Provider value = {socket}>
-      <UserContext.Provider value={{userID,setuserID,code}}>
+      <UserContext.Provider value={{userID,setuserID,code,setcode}}>
       <AuthContext.Provider value={{auth,setAuth}}>
       <Toaster position="top-right" reverseOrder={false}/>
         <Routes code={code} setcode={setcode}></Routes>

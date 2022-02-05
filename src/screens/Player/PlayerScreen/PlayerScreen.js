@@ -3,12 +3,12 @@ import Button from "../../../components/Button/Button";
 import { UserContext } from '../../../context/context';
 import "./PlayerScreen.css";
 import { database as db } from "../../../firebase";
-import { ref, child, get, push, update } from "firebase/database";
+import { ref, child, get, push, update,set } from "firebase/database";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 const PlayerScreen = () => {
   const navigate = useNavigate()
-  const {userID} = useContext(UserContext);
+  const {userID,setcode} = useContext(UserContext);
   const [inputCode, setInputCode] = useState("");
   const [playerName, setPlayerName] = useState("");
   useEffect(() => {
@@ -56,6 +56,8 @@ const PlayerScreen = () => {
     // check for room in rdb
     if (inputCode.length && playerName.length) {
       const dbRef = ref(db);
+      setcode(inputCode)
+    
       console.log(inputCode);
       get(child(dbRef, `sessions/${inputCode}`))
         .then((snapshot) => {
@@ -84,7 +86,9 @@ const PlayerScreen = () => {
                 name: playerName
               }};
               update(ref(db), updates);
-            
+              set(ref(db, 'sessionData/' + inputCode+'/hostProperties/eye/'+userID), {
+                isTrue :false
+              });
              //window.location.href = `/lobby/${inputCode}`;
              navigate(`/lobby/${inputCode}`)
 

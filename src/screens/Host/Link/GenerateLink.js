@@ -43,10 +43,11 @@ const GenerateLink = ({ code, setcode }) => {
   useEffect(() => {
     sessionStorage.setItem("status", 1);
     setcode(generateCode(7));
+    console.log(code);
   }, []);
 
   const createRoom = () => {
-    checkIfExists();
+    //checkIfExists();
     console.log(userID);
 
     set(ref(db, "sessions/" + code), {
@@ -64,11 +65,9 @@ const GenerateLink = ({ code, setcode }) => {
         }
       },
     });
-    set(ref(db, "sessionData/" + code), {
-      state :{
-        r1 : [0,1,2,3,4,5,6,7,8,9]
-      }
-     });
+    
+
+
     // const newPostKey = push(child(ref(db), 'users')).key;
     set(ref(db, 'users/' + userID), {
       name : "logan"

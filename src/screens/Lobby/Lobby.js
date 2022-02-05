@@ -26,7 +26,7 @@ const Lobby = () => {
   var Properties;
   const lobby = JSON.parse(sessionStorage.getItem("lobby"));
   const [players, setPlayers] = useState([]);
-  const {userID} = useContext(UserContext);
+  const {userID,code,setcode} = useContext(UserContext);
   let status = Number(sessionStorage.getItem("status"));
   const clickHandler = () => {
     socket.emit("start-game", sessionStorage.getItem("game-code"));
@@ -59,9 +59,10 @@ const Lobby = () => {
   //getUsers()
   useEffect(() => {
     console.log(userID);
-  
+  setcode(id)
     getUsers();
     console.log(auth);
+    console.log(code);
     //console.log(lobby);
   }, []);
 useEffect(() => {
@@ -85,7 +86,7 @@ useEffect(() => {
             ))
           : console.log(1)}
       </ul>
-      { auth ? (
+      { auth <2? (
         <Link
           to={{
             pathname: `/round/${1}`,
