@@ -59,6 +59,8 @@ const GenerateLink = ({ code, setcode }) => {
       },*/
       properties: {
         timer,
+        isStarted:false,
+        isOver:false,
         host : {
           userID,
           name: "Logan",

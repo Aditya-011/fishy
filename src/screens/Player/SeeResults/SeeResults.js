@@ -5,13 +5,27 @@ import Fish2 from "../../../images/Fish2-new.png";
 import FlashCard from "../../../components/Flashcard/Flashcard";
 import { SocketContext } from "../../../context/SocketContext";
 import { useParams } from "react-router-dom";
-
+import { set, ref, update, get, child, onValue } from "firebase/database";
+import { database as db } from "../../../firebase";
+import { UserContext } from "../../../context/context";
 const SeeResults = () => {
   let roundNo = useParams();
   const [players, setPlayers] = useState([]);
   const socket = useContext(SocketContext);
+  const code  = sessionStorage.getItem('code')
+  const getPlayers = () => {
+    onValue(ref(db, `sessionData/${code}/state/${roundNo.id}`), (snapshot) => {
+      console.log(`sessionData/${code}/state/${roundNo.id}`);
+      //  console.log(snapshot.val());
+      const data = snapshot.val();
+      console.log(data);
+      setPlayers(data);
+    });
+  };
+
   useEffect(() => {
-    socket.emit("new-room", sessionStorage.getItem('game-code'));
+    getPlayers()
+  /*  socket.emit("new-room", sessionStorage.getItem('game-code'));
     socket.on("updated-players", updatedPlayers => {
       setPlayers(updatedPlayers);
     });
@@ -24,8 +38,8 @@ const SeeResults = () => {
       sessionStorage.clear();
       localStorage.clear();
       window.location.href = "/game";
-    });
-  }, [socket]);
+    });*/
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center pt-1">
@@ -33,7 +47,7 @@ const SeeResults = () => {
         <FlashCard text={`Day ${roundNo.id}`} />
       </div>
       <div className="flex mt-4 xs-mobile:flex-wrap md:flex-nowrap justify-center items-center">
-        {players && players.map((player, index) => {
+        {players && Object.values(players).map((player, index) => {
           return (
             <div className="inner-div flex flex-col md:p-1" key={index}>
               <div className="xs-mobile:w-4/6 mobile:w-full w-full self-center ml-auto mr-auto">

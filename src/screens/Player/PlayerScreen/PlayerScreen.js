@@ -81,10 +81,10 @@ const PlayerScreen = () => {
            // console.log(`key ${newPostKey}`);
             const updates = {};
             updates[`sessions/${inputCode}/users/` + userID] = newUser;
-              updates[`users/`+userID] = {[userID]:
-              {
+              updates[`users/`+userID] = {
+              
                 name: playerName
-              }};
+              };
               update(ref(db), updates);
               set(ref(db, 'sessionData/' + inputCode+'/hostProperties/eye/'+userID), {
                 isTrue :false

@@ -2,8 +2,8 @@ import React, { useContext, useState, useEffect } from "react";
 import { SocketContext } from "../../context/SocketContext";
 import FlashCard from "../../components/Flashcard/Flashcard";
 import Button from "../../components/Button/Button";
-import { Link, useParams } from "react-router-dom";
-import { UserContext,AuthContext } from "../../context/context";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { UserContext, AuthContext } from "../../context/context";
 import "./Lobby.css";
 import { database as db } from "../../firebase";
 import {
@@ -20,21 +20,40 @@ import {
 
 const Lobby = () => {
   const socket = useContext(SocketContext);
-  const {auth,setAuth}= useContext(AuthContext)
+  const navigate = useNavigate();
+  const { auth, setAuth } = useContext(AuthContext);
   let { id } = useParams();
   var Players;
   var Properties;
-  const lobby = JSON.parse(sessionStorage.getItem("lobby"));
   const [players, setPlayers] = useState([]);
-  const {userID,code,setcode} = useContext(UserContext);
+  const { userID, code, setcode } = useContext(UserContext);
+  const [isStarted, setisStarted] = useState(false);
   let status = Number(sessionStorage.getItem("status"));
   const clickHandler = () => {
-    socket.emit("start-game", sessionStorage.getItem("game-code"));
+    const dbRef = ref(db);
+    get(child(dbRef, "sessions/" + code + "/properties"))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          //console.log(snapshot.val());
+          const data = snapshot.val();
+          const updates = {};
+          updates["sessions/" + code + "/properties"] = {
+            ...data,
+            isStarted: true,
+          };
+          update(ref(db), updates);
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
   const getRoomProperties = () => {
     const starCountRef = ref(db, `sessions/${id}/properties`);
     onValue(starCountRef, (snapshot) => {
-      console.log(snapshot.val());
+      //console.log(snapshot.val());
       if (snapshot.val()) {
         Properties = snapshot.val();
         if (snapshot.val().host.userID === userID) {
@@ -56,19 +75,37 @@ const Lobby = () => {
     });
   };
 
+  const watchIfStarted = ()=>
+  {
+    const starCountRef = ref(db, "sessions/" + code + "/properties/isStarted");
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+  if(snapshot.val())
+  {
+    console.log('yes');
+    setisStarted(true)
+  }
+});
+  }
+
   //getUsers()
   useEffect(() => {
     console.log(userID);
-  setcode(id)
+    setcode(id);
+    sessionStorage.setItem('code',code)
     getUsers();
     console.log(auth);
     console.log(code);
+    watchIfStarted()
     //console.log(lobby);
   }, []);
-useEffect(() => {
-  getRoomProperties();
-  //console.log(auth);
-}, [players]);
+  useEffect(() => {
+    getRoomProperties();
+    //console.log(auth);
+  }, [players]);
+  useEffect(() => {
+    if (isStarted) navigate(`/round/${1}`);
+  }, [isStarted]);
   return (
     <div className="flex flex-col items-center justify-center h-full pt-2">
       <div className="">
@@ -86,21 +123,14 @@ useEffect(() => {
             ))
           : console.log(1)}
       </ul>
-      { auth <2? (
-        <Link
-          to={{
-            pathname: `/round/${1}`,
-            state: {
-              value: { players },
-            },
-          }}
-        >
+      {auth ? (
+        
           <Button
             display={"bg-btn-bg-primary bg-center btn-lg"}
             text={"Start Game"}
             clickHandler={clickHandler}
           />
-        </Link>
+   
       ) : null}
     </div>
   );

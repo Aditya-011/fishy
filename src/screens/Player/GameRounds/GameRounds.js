@@ -14,7 +14,7 @@ import "./GameRounds.css";
 import three from "../../../images/three.png";
 import five from "../../../images/five.png";
 import ten from "../../../images/ten.png";
-import { set, ref,get,child,update } from "firebase/database";
+import { set, ref,get,child,update,onValue } from "firebase/database";
 import { database as db } from "../../../firebase";
 import { UserContext } from "../../../context/context";
 const GameRounds = () => {
@@ -37,30 +37,57 @@ const GameRounds = () => {
   let playerName = sessionStorage.getItem("playerName");
   let { code, userID } = useContext(UserContext);
 
+const checkIfOver =()=>
+{
+  const starCountRef = ref(db, `sessionData/${code}/hostProperties/isOver`);
+onValue(starCountRef, (snapshot) => {
+  const isOver = snapshot.val();
+ //console.log(data);
+ if(isOver)
+ {
+  setTimeout(() => {
+    navigate(`/player/results/${roundNo.id}`)
+   }, 3000);
+ }
+});
+}
   useEffect(() => {
     console.log(code);
     console.log(roundNo);
     console.log("sessionData/" + code + "/eye/" + userID);
+    checkIfOver()
     if (roundNo.id>10) {
       navigate(`/gameover`)
     }
    else if (code && userID) {
-      set(ref(db, "sessionData/" + code + "/hostProperties/eye/" + userID), {
+    get(child(ref(db), `users/${userID}`)).then((snapshot) => {
+      if (snapshot.exists()) {
+       const name = snapshot.val().name
+       console.log(name);
+       set(ref(db, "sessionData/" + code + "/hostProperties/eye/" + userID), {
         isTrue: false,
       });
-      set(ref(db, 'sessionData/'+code+'/state/'+roundNo.id+'/'+userID+'/'), {
-       
-          indivScore: 0,
-          isSelected: {
-            status: false,
-            choice: 0,
-          },
-          isSubmit: {
-            status: false,
-            choice: 0,
-          },
-        
+      set(ref(db, "sessionData/" + code + "/state/" + roundNo.id+'/'+userID), {
+      
+        eye:false,
+        name ,
+        indivScore: 0,
+        isSelected: {
+          status: false,
+          choice: 0,
+        },
+        isSubmit: {
+          status: false,
+          choice: 0,
+        },
       });
+     } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  
       setChoice(0)
       setDisabled(false)
       setActive([false, false])
