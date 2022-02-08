@@ -64,7 +64,7 @@ const Discussion = () => {
 
     //  console.log(data);
     });
-    if(sum=== 1)                          // change here
+    if(sum=== 2)                          // change here
     {
       get(child(ref(db), `sessionData/${code}/hostProperties/`)).then((snapshot) => {
         if (snapshot.exists()) {
@@ -159,6 +159,9 @@ const Discussion = () => {
       updates["sessionData/" + code] = {
         ...data,
         hostProperties: {
+          movetoWaitingRoom : false,
+          nextRound:false,
+          showScore:false,
           startTime: "",
           stopTimer: false,
           isOver: false

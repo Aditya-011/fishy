@@ -3,6 +3,7 @@ import "./Scores.css";
 
 const Scores = ({ show, scores, players }) => {
   useEffect(() => {
+    console.log(scores);
     const ele = document.querySelector(".active");
     if (ele) {
       ele.scrollIntoView();
@@ -24,7 +25,7 @@ const Scores = ({ show, scores, players }) => {
         })}
         {show ? <p className="grid-display-item display">Round Total</p> : null}
       </li>
-      {scores && scores.map((score, index) => {
+      {scores  && scores.map((score, index) => {
         let row = 0;
         if (index === scores.length - 1) {
           return (
@@ -47,13 +48,14 @@ const Scores = ({ show, scores, players }) => {
               ) : (
                 <p className="grid-display-item">{`#${index + 1}`}</p>
               )}
-              {score && score.map((indivScore, ind) => {
-                total[ind] += indivScore;
-                row += indivScore;
-                rowScore += indivScore;
-                return (
+              {score && Object.values(score).map((indivScore, ind) => {
+                console.log(indivScore.indivScore);
+                total[ind] += indivScore.indivScore;
+                row += indivScore.indivScore;
+                rowScore += indivScore.indivScore;
+             return (
                   <p key={`${index}`} className="grid-display-item">
-                    {indivScore}
+                    {indivScore.indivScore}
                   </p>
                 );
               })}
@@ -83,13 +85,13 @@ const Scores = ({ show, scores, players }) => {
             ) : (
               <p className="grid-display-item">{`#${index + 1}`}</p>
             )}
-            {score && score.map((indivScore, ind) => {
-              total[ind] += indivScore;
-              row += indivScore;
-              rowScore += indivScore;
+            {score && Object.values(score).map((indivScore, ind) => {
+              total[ind] += indivScore.indivScore;
+              row += indivScore.indivScore;
+              rowScore += indivScore.indivScore;
               return (
                 <p key={`${index + 1}.${ind}`} className="grid-display-item">
-                  {indivScore}
+                  {indivScore.indivScore}
                 </p>
               );
             })}
@@ -98,7 +100,7 @@ const Scores = ({ show, scores, players }) => {
             ) : null}
           </li>
         );
-      })}
+            })}
       <li className={`grid-display total ${show}`}>
         <p className="grid-display-item">Total</p>
 

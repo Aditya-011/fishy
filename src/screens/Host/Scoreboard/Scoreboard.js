@@ -6,27 +6,83 @@ import Scores from "../../../components/Scores/Scores";
 import { SocketContext } from "../../../context/SocketContext";
 import Button from "../../../components/Button/Button";
 import { Link } from "react-router-dom";
+import { set, ref, update, get, child, onValue } from "firebase/database";
+import { database as db } from "../../../firebase";
+import { UserContext } from "../../../context/context";
 
 const Scoreboard = () => {
+  const code = sessionStorage.getItem("code");
   const socket = useContext(SocketContext);
   const [show, setShow] = useState(false);
   const [scoreData, setScores] = useState([]);
   const [playerData, setPlayers] = useState([]);
+  const getPlayers = () => {
+    get(child(ref(db), `sessions/${code}/users`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const data = Object.values(snapshot.val());
+          console.log(data);
+          setPlayers(data);
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+  const getPlayersData = () => {
+    onValue(ref(db, `sessionData/${code}/state`), (snapshot) => {
+      console.log(`sessionData/${code}/state`);
+      //  console.log(snapshot.val());
+      const data = Object.values(snapshot.val());
+      console.log(data);
+      setScores(data);
+    });
+  };
+  const waitingRoom = () => {
+    const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
+    onValue(starCountRef, (snapshot) => {
+      const data = snapshot.val();
+      console.log(data);
+    });
+  };
   const clickHandler = () => {
     setShow(!show);
-    socket.emit("set-visible", sessionStorage.getItem('game-code'));
-  }
+    socket.emit("set-visible", sessionStorage.getItem("game-code"));
+  };
 
   useEffect(() => {
-    socket.emit("show-scores", sessionStorage.getItem('game-code'));
+    /*  socket.emit("show-scores", sessionStorage.getItem('game-code'));
     socket.on("scores", ({ scores, players }) => {
       setScores(scores);
       setPlayers(players);
-    });
-  }, [socket]);
+    });*/
+    getPlayers();
+    getPlayersData();
+    waitingRoom();
+  }, []);
 
   const clickHandler2 = () => {
-    socket.emit("waiting-arena", sessionStorage.getItem('game-code'));
+    /* socket.emit("waiting-arena", sessionStorage.getItem('game-code'));*/
+    get(child(ref(db), `sessionData/${code}/hostProperties`))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          // console.log(snapshot.val());
+          const res = snapshot.val();
+          const updates = {};
+          updates[`sessionData/${code}/hostProperties`] = {
+            ...res,
+            movetoWaitingRoom: true,
+          };
+          update(ref(db), updates);
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   return (
@@ -46,7 +102,7 @@ const Scoreboard = () => {
           />
         </div>
 
-        {scoreData ? (
+        {playerData ? (
           <Scores show={show} scores={scoreData} players={playerData} />
         ) : null}
       </div>
@@ -58,11 +114,11 @@ const Scoreboard = () => {
           },
         }}
       >
-        <Button
-          text={"Next Round"}
-          display={"bg-btn-bg-primary bg-center p-3 mt-2 btn-lg"}
-          clickHandler={() => clickHandler2()}
-        />
+      <Button
+        text={"Next Round"}
+        display={"bg-btn-bg-primary bg-center p-3 mt-2 btn-lg"}
+        clickHandler={() => clickHandler2()}
+      />
       </Link>
     </div>
   );

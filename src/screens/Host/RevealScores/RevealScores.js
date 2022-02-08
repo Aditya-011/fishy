@@ -20,6 +20,7 @@ const RevealScores = () => {
   const [players, setPlayers] = useState([]);
   const [showEye, setShowEye] = useState(true);
 
+  const movetoScoreCard = () => {};
   const clickHandler = (uId) => {
     console.log(uId);
     const dbRef = ref(db);
@@ -137,6 +138,19 @@ const RevealScores = () => {
         <Button
           text={"Scores"}
           display={"bg-btn-bg-primary bg-center btn-lg mt-3"}
+          clickHandler={() => {
+            const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
+            onValue(starCountRef, (snapshot) => {
+              const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
+              onValue(starCountRef, (snapshot) => {
+                const res = snapshot.val();
+                console.log(res);
+                const updates = {};
+                updates[`sessionData/${code}/hostProperties`] = {...res,showScore:true};
+                update(ref(db), updates);
+              });
+            });
+          }}
         />
       </Link>
 
