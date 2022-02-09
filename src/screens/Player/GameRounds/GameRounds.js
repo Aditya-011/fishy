@@ -45,9 +45,8 @@ onValue(starCountRef, (snapshot) => {
  //console.log(data);
  if(isOver)
  {
-  setTimeout(() => {
-    navigate(`/player/results/${roundNo.id}`)
-   }, 3000);
+  navigate(`/player/results/${roundNo.id}`)
+ 
  }
 });
 }

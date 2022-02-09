@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 const Scoreboard = () => {
   const socket = useContext(SocketContext);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const code = sessionStorage.getItem("code");
   const [scoreData, setScores] = useState([]);
   const [playerData, setPlayers] = useState([]);
@@ -43,36 +43,16 @@ const Scoreboard = () => {
     const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
     onValue(starCountRef, (snapshot) => {
       const res = snapshot.val();
-      console.log(res);
+      console.log("move to waitin");
       if (res.movetoWaitingRoom) {
-        setTimeout(() => {
-          console.log('move to waiting room');
-          navigate('/waiting')
-        }, 2000);
+        navigate("/waiting");
       }
-      //updateStarCount(postElement, data);
     });
   };
   useEffect(() => {
     getPlayers();
     getPlayersData();
-    waitingRoom()
-    /*  socket.emit("join-scores", sessionStorage.getItem('game-code'));
-    socket.on("scores", ({ scores, players }) => {
-      console.log(scores, players);
-      setScores(scores);
-      setPlayers(players);
-    });
-    socket.on("set-visible", () => {
-      setShow(!show);
-    });
-    socket.on("join-waiting", () => {
-      window.location.href = `/waiting`;
-    });
-    socket.on("end-game", () => {
-      sessionStorage.clear()
-      
-      window.location.href = `/gameover`});*/
+    waitingRoom();
   }, []);
   return (
     <div className="flex flex-col justify-center items-center h-screen">

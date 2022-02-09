@@ -48,7 +48,7 @@ const SeeResults = () => {
       onValue(starCountRef, (snapshot) => {
         const res = snapshot.val();
         console.log(res);
-        if (res.showScore) navigate("/player/scores");
+        if (res.showScore && res.isOver) navigate("/player/scores");
       });
     });
   }, [roundNo.id]);

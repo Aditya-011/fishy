@@ -7,7 +7,7 @@ import Icons from "../../../components/Icons/Icons";
 import "./RevealScores.css";
 import { SocketContext } from "../../../context/SocketContext";
 import Button from "../../../components/Button/Button";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import DeckIcons from "../../../components/DeckIcons/DeckIcons";
 import { set, ref, update, get, child, onValue } from "firebase/database";
 import { database as db } from "../../../firebase";
@@ -19,6 +19,7 @@ const RevealScores = () => {
   const code = sessionStorage.getItem("game-code");
   const [players, setPlayers] = useState([]);
   const [showEye, setShowEye] = useState(true);
+  const navigate = useNavigate();
 
   const movetoScoreCard = () => {};
   const clickHandler = (uId) => {
@@ -134,25 +135,31 @@ const RevealScores = () => {
             }
           })}
       </div>
-      <Link to="/host/scores">
-        <Button
-          text={"Scores"}
-          display={"bg-btn-bg-primary bg-center btn-lg mt-3"}
-          clickHandler={() => {
-            const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
-            onValue(starCountRef, (snapshot) => {
-              const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
-              onValue(starCountRef, (snapshot) => {
-                const res = snapshot.val();
-                console.log(res);
-                const updates = {};
-                updates[`sessionData/${code}/hostProperties`] = {...res,showScore:true};
+<Link to={"/host/scores"}> <Button
+        text={"Scores"}
+        display={"bg-btn-bg-primary bg-center btn-lg mt-3"}
+        clickHandler={() => {
+          get(child(ref(db),  `sessionData/${code}/hostProperties`)).then((snapshot) => {
+            if (snapshot.exists()) {
+              const res = snapshot.val();
+              console.log(res);
+              const updates = {};
+              updates[`sessionData/${code}/hostProperties`] = {
+                ...res,
+                showScore: true,
+              };
+              if (!res.showScore) {
                 update(ref(db), updates);
-              });
-            });
-          }}
-        />
-      </Link>
+              }
+            } else {
+              console.log("No data available");
+            }
+          }).catch((error) => {
+            console.error(error);
+          });
+        }}
+      /></Link>
+     
 
       <div className="flex items-end justify-between h-full w-full mt-4 xs-mobile:mt-5">
         <DeckIcons />

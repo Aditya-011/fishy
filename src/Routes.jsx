@@ -1,8 +1,8 @@
-import React,{useEffect} from 'react';
+import React,{useEffect,useState} from 'react';
 import {
     BrowserRouter ,
     Routes as Router,
-    Route,
+    Route, Navigate
   } from 'react-router-dom'
   import Home from './screens/Home/Home';
 import Carousel from './screens/Rules/Rules';
@@ -22,6 +22,7 @@ import {database as db} from './firebase'
 
 const Routes = ({code,setcode}) => {
  useEffect(() => {
+
  }, []);
   return <div>
         <BrowserRouter>
@@ -36,7 +37,7 @@ const Routes = ({code,setcode}) => {
           <Route path = '/round/:id' element = {<Game></Game>} />
           <Route path = '/host/results/:id' element = {<RevealScores></RevealScores>} />
           <Route path = '/player/results/:id' element = {<SeeResults></SeeResults>} />
-          <Route path = '/host/scores' element = {<Scoreboard></Scoreboard>} />
+          <Route path = '/host/scores' element = {  <Scoreboard></Scoreboard>}/>
           <Route path = '/player/scores' element = {<PlayerScoreboard></PlayerScoreboard>} />
           <Route path = '/gameover' element = {<Endgame></Endgame>} />
     

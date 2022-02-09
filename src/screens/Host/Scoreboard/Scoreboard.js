@@ -5,13 +5,14 @@ import Icons from "../../../components/Icons/Icons";
 import Scores from "../../../components/Scores/Scores";
 import { SocketContext } from "../../../context/SocketContext";
 import Button from "../../../components/Button/Button";
-import { Link } from "react-router-dom";
+import { Link ,useNavigate} from "react-router-dom";
 import { set, ref, update, get, child, onValue } from "firebase/database";
 import { database as db } from "../../../firebase";
 import { UserContext } from "../../../context/context";
 
 const Scoreboard = () => {
   const code = sessionStorage.getItem("code");
+  const navigate = useNavigate()
   const socket = useContext(SocketContext);
   const [show, setShow] = useState(false);
   const [scoreData, setScores] = useState([]);
@@ -60,7 +61,7 @@ const Scoreboard = () => {
     });*/
     getPlayers();
     getPlayersData();
-    waitingRoom();
+    //waitingRoom();
   }, []);
 
   const clickHandler2 = () => {
@@ -76,6 +77,10 @@ const Scoreboard = () => {
             movetoWaitingRoom: true,
           };
           update(ref(db), updates);
+          if(res.isOver)
+          {
+            navigate(`/waiting`)
+          }
         } else {
           console.log("No data available");
         }

@@ -41,7 +41,7 @@ const Discussion = () => {
         const data = Object.values(snapshot.val());
         console.log(data);
         setPlayerInfo(data)
-        checkIfOver()
+       
         setCount(count+1)
       }
     )
@@ -83,11 +83,8 @@ const Discussion = () => {
         console.error(error);
       });
       console.log('round over');
-      
-    setTimeout(() => {
       navigate(`/host/results/${roundNo.id}`)
-     }, 3000);
-    
+   
     }
   }
 
@@ -151,7 +148,21 @@ const Discussion = () => {
      });*/
   }, []);
 
-  useEffect(() => { get(child(ref(db), "sessionData/" + code))
+  useEffect(() => { 
+    
+    /*set(ref(db, "sessionData/" + code), {
+      hostProperties: {
+        movetoWaitingRoom : false,
+        nextRound:false,
+        showScore:false,
+        startTime: "",
+        stopTimer: false,
+        isOver: false
+      },
+    });
+  
+   /* */
+    get(child(ref(db), "sessionData/" + code))
   .then((snapshot) => {
     if (snapshot.exists()) {
       const data = snapshot.val();
@@ -264,28 +275,11 @@ const Discussion = () => {
 
       </div>
       <div className="results">
-        {disabled ? (
-          <button
-            className="bg-btn-bg-primary p-3 text-warning btn-lg disabled:opacity-60 cursor-default"
-            disabled
-          >
-            Results
-          </button>
-        ) : (
-          <Link
-            to={{
-              pathname: `/host/results/${roundNo.id}`,
-              state: {
-                value: { playerInfo },
-              },
-            }}
-          >
-            <Button
+        { <Button
               text={"Results"}
               display={"bg-btn-bg-primary p-3 bg-center btn-lg"}
-            />
-          </Link>
-        )}
+              clickHandler={checkIfOver}
+            />}
       </div>
 
       <div className="flex items-end justify-between h-full w-full">

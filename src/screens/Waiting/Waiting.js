@@ -2,9 +2,13 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import Button from "../../components/Button/Button";
 import { SocketContext } from "../../context/SocketContext";
 import "./Waiting.css";
-
+import { AuthContext } from "../../context/context";
+import { useNavigate } from "react-router-dom";
+import { set, ref, update, get, child, onValue } from "firebase/database";
+import { database as db } from "../../firebase";
 const Waiting = () => {
   const status = sessionStorage.getItem("status");
+  const navigate = useNavigate()
   const socket = useContext(SocketContext);
   const [roundNo, setRoundNo] = useState(0);
   const [timeFormat, setTimeFormat] = useState("03:00");
@@ -12,9 +16,52 @@ const Waiting = () => {
   const [active, setActive] = useState(false);
   const [counter, setCounter] = useState(180);
   const [waitingMsg, setWaitingMsg] = useState("");
+  const {auth } = useContext(AuthContext)
+  const code = sessionStorage.getItem('code')
 
+  const getRoundNo=()=>
+  {
+    get(child(ref(db), `sessionData/${code}/state`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        
+        const res = Object.keys(snapshot.val())
+        console.log(res[res.length-1]);
+        setRoundNo(Number(res[res.length-1])+1)
+      } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+  const movetoNextRound = ()=>
+  {
+    const starCountRef = ref(db, `sessionData/${code}`);
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val();
+ if(data.hostProperties.nextRound && data.hostProperties.isOver)
+ {
+   const next = Object.values(data.state).length +1
+   console.log(next);
+  // window.location.replace(`/round/${next}`)
+   setTimeout(() => {
+    navigate(`/round/${next}`)
+   }, 2000);
+ // navigate(`/round/${next}`)
+ }
+});
+
+  }
   useEffect(() => {
-    sessionStorage.removeItem("time-val");
+    //console.log(auth);\
+    getRoundNo()
+    if (!auth) {
+      movetoNextRound()
+      
+    }
+    console.log(roundNo);
+    /*sessionStorage.removeItem("time-val");
     sessionStorage.removeItem("time-format");
     sessionStorage.removeItem("time-percent");
     if (sessionStorage.getItem("time-forma"))
@@ -59,19 +106,34 @@ const Waiting = () => {
     }
     return () => {
       clearInterval(timerRef.current);
-    };
-  }, [socket, active, counter]);
+    };*/
+  }, []);
 
   const startGame = () => {
-    sessionStorage.removeItem("time-format");
+    /*sessionStorage.removeItem("time-format");
     sessionStorage.removeItem("active");
     sessionStorage.removeItem("counter");
-    socket.emit("start-next-round", sessionStorage.getItem("game-code"));
+    socket.emit("start-next-round", sessionStorage.getItem("game-code"));*/
+    get(child(ref(db), `sessionData/${code}/hostProperties`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        console.log(snapshot.val());
+        const res = snapshot.val()
+        const updates = {};
+        updates[`sessionData/${code}/hostProperties`] = {...res,nextRound:true};
+        update(ref(db), updates);
+        navigate(`/round/${roundNo}`)
+      } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
   };
 
   const endGame = () => {
-    socket.emit("game-over", sessionStorage.getItem("game-code"));
-    window.location.href = "/gameover";
+    //socket.emit("game-over", sessionStorage.getItem("game-code"));
+   // window.location.href = "/gameover";
+    navigate('/gameover')
   };
 
   const skipGameRound = () => {
@@ -91,7 +153,7 @@ const Waiting = () => {
       </div>
       <div className="bg-card bg-no-repeat bg-cover">
         {(roundNo === 5 || roundNo === 8 || roundNo === 10) &&
-        status === "1" ? (
+        auth ? (
           <div className="flex flex-col w-full justify-center items-center pt-3">
             <h1 className="text-2xl text-warning font-bold px-4">
               {!active
@@ -109,7 +171,7 @@ const Waiting = () => {
             </button>
           </div>
         ) : null}
-        {status === "1" ? (
+        {auth ? (
           roundNo < 11 ? (
             <div className="flex flex-row justify-center items-center py-10 px-10 w-full">
               <div>
