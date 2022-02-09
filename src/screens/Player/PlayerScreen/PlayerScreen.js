@@ -6,6 +6,7 @@ import { ref, child, get, push, update } from 'firebase/database';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../../context/context';
+<<<<<<< HEAD
 const PlayerScreen = () => {
 	const Navigate = useNavigate();
 	const user = useContext(UserContext);
@@ -15,6 +16,28 @@ const PlayerScreen = () => {
 		sessionStorage.setItem('status', 0);
 		console.log(user);
 	}, []);
+=======
+import "./PlayerScreen.css";
+import { database as db } from "../../../firebase";
+import { ref, child, get, push, update,set } from "firebase/database";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+const PlayerScreen = () => {
+  const navigate = useNavigate()
+  const {userID,setcode} = useContext(UserContext);
+  const [inputCode, setInputCode] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  useEffect(() => {
+    sessionStorage.setItem("status", 0);
+    console.log(userID);
+    /*   socket.on("error", ({ message }) => {
+      if (!code) {
+        alert(message);
+        correctCode(true);
+      }
+    });*/
+  }, []);
+>>>>>>> 3634a7ec6348204a9a32dfaa18edf23b98710c0d
 
 	const enterGame = async () => {
 		// check for room in rdb
@@ -45,6 +68,7 @@ const PlayerScreen = () => {
 						};
 						update(ref(db), updates);
 
+<<<<<<< HEAD
 						//window.location.href = `/lobby/${inputCode}`;
 						Navigate(`/lobby/${inputCode}`);
 					} else {
@@ -59,6 +83,46 @@ const PlayerScreen = () => {
 			console.log('enter game');
 		}
 	};
+=======
+    // check for room in rdb
+    if (inputCode.length && playerName.length) {
+      const dbRef = ref(db);
+      setcode(inputCode)
+    
+      console.log(inputCode);
+      get(child(dbRef, `sessions/${inputCode}`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            console.log(snapshot.val());
+            const newUser = {
+              name: playerName,
+              role: "player",
+              rounds : [
+               
+              ]
+            };
+            const newPostKey = push(
+              child(ref(db), `sessions/${inputCode}/users`)
+            ).key;
+            const newUserKey =  push(
+              child(ref(db), `users`)
+            ).key;
+            const addUser={}
+           
+           // console.log(`key ${newPostKey}`);
+            const updates = {};
+            updates[`sessions/${inputCode}/users/` + userID] = newUser;
+              updates[`users/`+userID] = {
+              
+                name: playerName
+              };
+              update(ref(db), updates);
+              set(ref(db, 'sessionData/' + inputCode+'/hostProperties/eye/'+userID), {
+                isTrue :false
+              });
+             //window.location.href = `/lobby/${inputCode}`;
+             navigate(`/lobby/${inputCode}`)
+>>>>>>> 3634a7ec6348204a9a32dfaa18edf23b98710c0d
 
 	return (
 		<div className="flex flex-col bg-card bg-no-repeat bg-cover bg-blend-screen rounded-none px-8 pt-6 pb-8 h-full">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams,Link,useNavigate } from "react-router-dom";
 import Button from "../../../components/Button/Button";
 import DeckIcons from "../../../components/DeckIcons/DeckIcons";
 import FishOptions from "../../../components/FishOptions/FishOptions";
@@ -14,17 +14,20 @@ import "./GameRounds.css";
 import three from "../../../images/three.png";
 import five from "../../../images/five.png";
 import ten from "../../../images/ten.png";
-
+import { set, ref,get,child,update,onValue } from "firebase/database";
+import { database as db } from "../../../firebase";
+import { UserContext } from "../../../context/context";
 const GameRounds = () => {
   const timeP = useRef(120);
   const roundNo = useParams();
+  const navigate =useNavigate()
   let multiplier = useRef(0);
   const socket = useContext(SocketContext);
   const timerRef = useRef();
   const [time, setTime] = useState(120);
   const [timeFormat, setTimeFormat] = useState();
   const [timePercent, setTimePercent] = useState();
-  const [choice, setChoice] = useState(1);
+  const [choice, setChoice] = useState(0);
   const [disabled, setDisabled] = useState(false);
   const [active, setActive] = useState([false, false]);
   const [score, showScore] = useState(false);
@@ -32,18 +35,71 @@ const GameRounds = () => {
   const [indivScore, setIndivScore] = useState([]);
   let timerID = useRef(null);
   let playerName = sessionStorage.getItem("playerName");
-  let code = sessionStorage.getItem("game-code");
+  let { code, userID } = useContext(UserContext);
 
+const checkIfOver =()=>
+{
+  const starCountRef = ref(db, `sessionData/${code}/hostProperties/isOver`);
+onValue(starCountRef, (snapshot) => {
+  const isOver = snapshot.val();
+ //console.log(data);
+ if(isOver)
+ {
+  navigate(`/player/results/${roundNo.id}`)
+ 
+ }
+});
+}
   useEffect(() => {
-    console.log("Inside use Effect");
-    socket.emit("join-players", { code, playerName });
-    socket.on("choice", choice => {
+    console.log(code);
+    console.log(roundNo);
+    console.log("sessionData/" + code + "/eye/" + userID);
+    checkIfOver()
+    if (roundNo.id>10) {
+      navigate(`/gameover`)
+    }
+   else if (code && userID) {
+    get(child(ref(db), `users/${userID}`)).then((snapshot) => {
+      if (snapshot.exists()) {
+       const name = snapshot.val().name
+       console.log(name);
+       set(ref(db, "sessionData/" + code + "/hostProperties/eye/" + userID), {
+        isTrue: false,
+      });
+      set(ref(db, "sessionData/" + code + "/state/" + roundNo.id+'/'+userID), {
+      
+        eye:false,
+        name ,
+        indivScore: 0,
+        isSelected: {
+          status: false,
+          choice: 0,
+        },
+        isSubmit: {
+          status: false,
+          choice: 0,
+        },
+      });
+     } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  
+      setChoice(0)
+      setDisabled(false)
+      setActive([false, false])
+    }
+
+  /*  socket.emit("join-players", { code, playerName });
+    socket.on("choice", (choice) => {
       choice === 1 ? setActive([true, false]) : setActive([false, true]);
       setDisabled(true);
       setChoice(choice);
     });
 
-    socket.on("new-timer", newTimer => {
+    socket.on("new-timer", (newTimer) => {
       if (!sessionStorage.getItem("time-val")) {
         setTime(newTimer);
       }
@@ -57,9 +113,9 @@ const GameRounds = () => {
       }
     }
 
-    socket.on("pause-status", bool => setPause(bool));
-    socket.on("disabled-status", bool => setDisabled(bool));
-    socket.on("indivScore", indivScore => setIndivScore(indivScore));
+    socket.on("pause-status", (bool) => setPause(bool));
+    socket.on("disabled-status", (bool) => setDisabled(bool));
+    socket.on("indivScore", (indivScore) => setIndivScore(indivScore));
     socket.on("showChoices", () => {
       sessionStorage.removeItem("time-format");
       sessionStorage.removeItem("time-percent");
@@ -72,7 +128,7 @@ const GameRounds = () => {
       window.location.href = "/game";
     });
 
-    socket.on("updateChoice", updatedChoice => {
+    socket.on("updateChoice", (updatedChoice) => {
       console.log("updated choice", updatedChoice);
       if (updatedChoice.name === playerName) {
         setChoice(updatedChoice.choice);
@@ -83,10 +139,12 @@ const GameRounds = () => {
       sessionStorage.removeItem("time-percent");
       sessionStorage.removeItem("time-val");
     };
-  }, [socket, roundNo, playerName, code, choice]);
+    /*
+     */
+  }, [roundNo.id]);
 
   useEffect(() => {
-    let active = false;
+    /* let active = false;
     if (!active && !pause) {
       if (time !== 0) {
         timerRef.current = setInterval(() => {
@@ -131,30 +189,59 @@ const GameRounds = () => {
     return () => {
       clearInterval(timerRef.current);
       active = true;
-    };
+    };*/
   }, [timerRef, time, pause, choice, code, playerName, socket]);
 
-  useEffect(() => {
-    socket.on("pause", () => {
-      setPause(true);
-      setDisabled(true);
-    });
-    socket.on("resume", () => {
-      setPause(false);
-      setDisabled(false);
-    });
-  }, [socket, time]);
+  useEffect(() => {}, [socket, time]);
 
-  const selectChoice = num => {
+  const selectChoice = (num) => {
     num === 1 ? setActive([true, false]) : setActive([false, true]);
     setChoice(num);
     console.log("choice made", num);
-    socket.emit("toggle", { num, playerName, code });
+    const dbRef = ref(db);
+    get(child(dbRef, 'sessionData/'+code+'/state/'+roundNo.id+'/'+ userID+'/')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var data = snapshot.val()
+      //  data.isSelected.status = true
+       // data.isSelected.choice=num
+        const updates = {};
+        updates['sessionData/'+code+'/state/'+roundNo.id+'/'+userID] = {...data,isSelected:{
+          choice :num,
+          status :true
+        }};
+        console.log(snapshot.val());
+        update(ref(db), updates);
+      } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  //  socket.emit("toggle", { num, playerName, code });
   };
 
   const submitChoice = () => {
-    socket.emit("submit", { choice, playerName, code });
-    clearInterval(timerID);
+    //socket.emit("submit", { choice, playerName, code });
+    //cearInterval(timerID);
+    const dbRef = ref(db);
+    get(child(dbRef, 'sessionData/'+code+'/state/'+roundNo.id+'/'+ userID+'/')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var data = snapshot.val()
+      //  data.isSelected.status = true
+       // data.isSelected.choice=num
+        const updates = {};
+        updates['sessionData/'+code+'/state/'+roundNo.id+'/'+userID] = {...data,isSubmit:{
+          choice,
+          status :true
+        }};
+        console.log(snapshot.val());
+        update(ref(db), updates);
+      } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
     setDisabled(true);
     Number(choice) === 1 ? setActive([true, false]) : setActive([false, true]);
   };
@@ -212,12 +299,26 @@ const GameRounds = () => {
         </div>
       </div>
       {disabled ? (
-        <button
+       <div>
+          <button
           className="text-warning bg-btn-bg-primary btn-lg bg-center w-25 self-center disabled:opacity-50 cursor-default"
           disabled
         >
           Submit
         </button>
+        {// REMOVE ME
+        }
+        <Link
+          to={{
+            pathname: `/round/${Number(roundNo.id) + 1 }`,
+          }}
+        >
+          <Button
+            display={"bg-btn-bg-primary bg-center btn-lg"}
+            text={"Start Game"}
+          />
+        </Link>
+       </div>
       ) : (
         <Button
           text={"Submit"}

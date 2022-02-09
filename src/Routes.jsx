@@ -1,5 +1,10 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes as Router, Route } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import {
+	BrowserRouter,
+	Routes as Router,
+	Route,
+	Navigate,
+} from 'react-router-dom';
 import Home from './screens/Home/Home';
 import Carousel from './screens/Rules/Rules';
 import GenerateLink from './screens/Host/Link/GenerateLink';
