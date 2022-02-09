@@ -26,20 +26,6 @@ const SeeResults = () => {
 
   useEffect(() => {
     getPlayers();
-    /*  socket.emit("new-room", sessionStorage.getItem('game-code'));
-    socket.on("updated-players", updatedPlayers => {
-      setPlayers(updatedPlayers);
-    });
-    socket.on(
-      "come-to-scores",
-      () => (window.location.href = "/player/scores")
-    );
-
-    socket.on("quit-game", () => {
-      sessionStorage.clear();
-      localStorage.clear();
-      window.location.href = "/game";
-    });*/
   }, []);
   useEffect(() => {
     const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
@@ -60,6 +46,7 @@ const SeeResults = () => {
       <div className="flex mt-4 xs-mobile:flex-wrap md:flex-nowrap justify-center items-center">
         {players &&
           Object.values(players).map((player, index) => {
+            console.log(player.isSubmit);
             return (
               <div className="inner-div flex flex-col md:p-1" key={index}>
                 <div className="xs-mobile:w-4/6 mobile:w-full w-full self-center ml-auto mr-auto">
@@ -67,7 +54,7 @@ const SeeResults = () => {
                 </div>
                 {player.eye ? (
                   <div className="mt-3 xs-mobile:ml-auto xs-mobile:mr-auto">
-                    {Number(player.choice) === 2 ? (
+                    {Number(player.isSubmit.choice) === 2 ? (
                       <ShowOptions fishes={Fish2} />
                     ) : (
                       <ShowOptions fishes={Fish1} />

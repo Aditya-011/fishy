@@ -49,9 +49,7 @@ const Discussion = () => {
 
   const checkIfOver = ()=>
   {
-  
     var sum=0;
-   
     onValue(ref(db,`sessionData/${code}/state/${roundNo.id}`), (snapshot) => {
       const data =  Object.values(snapshot.val());
       for (let i = 0; i < data.length; i++) {
@@ -60,8 +58,6 @@ const Discussion = () => {
         sum++
        console.log(sum);
       }
-
-
     //  console.log(data);
     });
     if(sum=== 2)                          // change here
@@ -91,77 +87,9 @@ const Discussion = () => {
   useEffect(() => {
     getPlayers();
     console.log(playerInfo);
-   
-    /* socket.emit("join-host", code);
-    socket.on("toggled", playerData => {
-      setPlayerInfo(playerData);
-    });
-    socket.on("chosen", playerData => {
-      setPlayerInfo(playerData);
-    });
-
-    // socket.on("updateChoice", updatedChoice => {
-    //   console.log("updated choice", updatedChoice);
-    //   alert(updatedChoice);
-    // });
-
-    socket.on("stop-timer", () => {
-      setTimeFormat("0:00");
-      setTimePercent(0);
-      setTime(0);
-      setDisabled(false);
-    });
-
-    socket.on("new-timer", newTimer => {
-      if (!sessionStorage.getItem("time-val")) {
-        setTime(newTimer);
-      }
-      timeP.current = newTimer;
-    });
-    
-    if (sessionStorage.getItem("time-format")) {
-      if (sessionStorage.getItem("time-val")) {
-        setTime(Number(sessionStorage.getItem("time-val")));
-        setTimeFormat(sessionStorage.getItem("time-format"));
-      }
-    }
-
-    socket.on("pause-status", bool => setMode(bool));
-    socket.on("player-values", players => setPlayerInfo(players));*/
-   
-
-    // Update insted of write
-
-    /*const dbRef = ref(db);
-     get(child(dbRef, `sessions/${code}/users`)).then((snapshot) => {
-       console.log( `sessions/${code}/users`);
-       const data = snapshot.val()
-       if (snapshot.exists()) {
-        // console.log(snapshot.val());
-         setPlayerInfo(data)
-       // console.log(playerInfo);
-        } else {
-         console.log("No data available");
-       }
-     }).catch((error) => {
-       console.error(error);
-     });*/
   }, []);
 
   useEffect(() => { 
-    
-    /*set(ref(db, "sessionData/" + code), {
-      hostProperties: {
-        movetoWaitingRoom : false,
-        nextRound:false,
-        showScore:false,
-        startTime: "",
-        stopTimer: false,
-        isOver: false
-      },
-    });
-  
-   /* */
     get(child(ref(db), "sessionData/" + code))
   .then((snapshot) => {
     if (snapshot.exists()) {
@@ -187,57 +115,6 @@ const Discussion = () => {
   .catch((error) => {
     console.error(error);
   });
-
-   // checkIfOver()
-    /*  if (sessionStorage.getItem("time-format")) {
-      if (sessionStorage.getItem("time-val")) {
-        setTime(Number(sessionStorage.getItem("time-val")));
-        setTimeFormat(sessionStorage.getItem("time-format"));
-      }
-    }
-    let active = false;
-    if (!active && !mode) {
-      console.log(time);
-      if (time !== 0) {
-        timerRef.current = setInterval(() => {
-          const secondCounter = time % 60;
-          const minuteCounter = Math.floor(time / 60);
-          setTime(time - 1);
-          sessionStorage.setItem("time-val", time - 1);
-          const computedSecond =
-            String(secondCounter).length === 1
-              ? `0${secondCounter}`
-              : secondCounter;
-          const computedMinute =
-            String(minuteCounter).length === 1
-              ? `0${minuteCounter}`
-              : minuteCounter;
-          sessionStorage.setItem(
-            "time-format",
-            computedMinute + ":" + computedSecond
-          );
-          setTimeFormat(computedMinute + ":" + computedSecond);
-          let originalTime = timeP.current;
-          // console.log(timeP.current);
-          // console.log(time);
-          const percent = 100 - ((originalTime - time) / originalTime) * 100;
-          // console.log(percent);
-          setTimePercent(percent);
-        }, 1000);
-      } else {
-        setTime(0);
-        setTimeFormat("0:00");
-        setTimePercent(0);
-        sessionStorage.setItem("time-val", 0);
-        sessionStorage.setItem("time-format", "0:00");
-      }
-    }
-
-     playerInfo
-    return () => {
-      clearInterval(timerRef.current);
-      active = true;
-    };*/
   }, [roundNo.id]);
 
   
