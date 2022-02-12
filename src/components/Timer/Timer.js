@@ -62,7 +62,7 @@ function MyTimer({ expiryTimestamp, auth, toggle, code }) {
       {auth ? (
         <>
           {" "}
-          {toggle.toggle ? (
+          {/*toggle.toggle ? (
             <Icons
               clickHandler={() => {
                 updateStopTimer()
@@ -79,7 +79,7 @@ function MyTimer({ expiryTimestamp, auth, toggle, code }) {
               }}
               icon={Resume}
             />
-          )}
+            )*/}
         </>
       ) : (
         <></>
@@ -114,6 +114,7 @@ const Timer = ({ timer, round }) => {
   };
   useEffect(() => {
     getTime();
+    console.log(timer);
     setTime(time.setSeconds(time.getSeconds() + timer));
     console.log(time);
   }, []);

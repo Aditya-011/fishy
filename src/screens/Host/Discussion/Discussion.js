@@ -47,10 +47,10 @@ const Discussion = () => {
   const getTimer =()=>
   {
     get(child(ref(db),`sessions/${code}/properties`)).then((snapshot) => {
-      if (snapshot.exists()) {
-      const res = Object.values(snapshot.val())
-      setTime(res[3])
-      //console.log(res);
+      if (snapshot.val().timer) {
+      const res = (snapshot.val().timer)
+      console.log(res);
+      setTime(res)
       } else {
         console.log("No data available");
       }
