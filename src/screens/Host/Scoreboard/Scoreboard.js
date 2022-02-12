@@ -24,6 +24,7 @@ const Scoreboard = () => {
           const data = Object.values(snapshot.val());
           console.log(data);
           setPlayers(data);
+          return
         } else {
           console.log("No data available");
         }
@@ -39,6 +40,7 @@ const Scoreboard = () => {
       const data = Object.values(snapshot.val());
       console.log(data);
       setScores(data);
+      return
     });
   };
   const waitingRoom = () => {
@@ -81,6 +83,7 @@ const Scoreboard = () => {
           {
             navigate(`/waiting`)
           }
+          return
         } else {
           console.log("No data available");
         }

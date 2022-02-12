@@ -14,20 +14,20 @@ const SeeResults = () => {
   const socket = useContext(SocketContext);
   const code = sessionStorage.getItem("code");
   const navigate = useNavigate();
+  const round = useContext(UserContext)
   const getPlayers = () => {
     onValue(ref(db, `sessionData/${code}/state/${roundNo.id}`), (snapshot) => {
       console.log(`sessionData/${code}/state/${roundNo.id}`);
-      //  console.log(snapshot.val());
+        //console.log(snapshot.val());
       const data = snapshot.val();
       console.log(data);
       setPlayers(data);
+      return
     });
   };
 
   useEffect(() => {
     getPlayers();
-  }, []);
-  useEffect(() => {
     const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
     onValue(starCountRef, (snapshot) => {
       const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
@@ -37,7 +37,8 @@ const SeeResults = () => {
         if (res.showScore && res.isOver) navigate("/player/scores");
       });
     });
-  }, [roundNo.id]);
+  }, [code]);
+ 
   return (
     <div className="flex flex-col items-center justify-center pt-1">
       <div className="md:w-96 xs-mobile:w-9/12">
@@ -46,7 +47,7 @@ const SeeResults = () => {
       <div className="flex mt-4 xs-mobile:flex-wrap md:flex-nowrap justify-center items-center">
         {players &&
           Object.values(players).map((player, index) => {
-            console.log(player.isSubmit);
+            console.log(player.eye);
             return (
               <div className="inner-div flex flex-col md:p-1" key={index}>
                 <div className="xs-mobile:w-4/6 mobile:w-full w-full self-center ml-auto mr-auto">

@@ -20,7 +20,7 @@ const RevealScores = () => {
   const [players, setPlayers] = useState([]);
   const [showEye, setShowEye] = useState(true);
   const navigate = useNavigate();
-
+const round = useContext(UserContext)
   const movetoScoreCard = () => {};
   const clickHandler = (uId) => {
     console.log(uId);
@@ -36,6 +36,7 @@ const RevealScores = () => {
             eye: !res.eye,
           };
           update(ref(db), updates);
+          return
         } else {
           console.log("No data available");
         }
@@ -53,20 +54,15 @@ const RevealScores = () => {
       const data = snapshot.val();
       console.log(data);
       setPlayers(data);
+      return
     });
   };
 
   useEffect(() => {
     //  console.log(45);
     getPlayers();
-    /* socket.emit("options", (sessionStorage.getItem("game-code")));
-    socket.on("updated-players", updatedPlayers => setPlayers(updatedPlayers))
-    sessionStorage.removeItem('time-val')
-    sessionStorage.removeItem('time-format')
-    
-    */
     console.log(players);
-  }, []);
+  }, [round]);
 
   return (
     <div className="flex flex-col items-center justify-center pt-1 h-screen reveal">

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import Button from "../../components/Button/Button";
 import { SocketContext } from "../../context/SocketContext";
 import "./Waiting.css";
-import { AuthContext } from "../../context/context";
+import { AuthContext, UserContext } from "../../context/context";
 import { useNavigate } from "react-router-dom";
 import { set, ref, update, get, child, onValue } from "firebase/database";
 import { database as db } from "../../firebase";
@@ -18,7 +18,7 @@ const Waiting = () => {
   const [waitingMsg, setWaitingMsg] = useState("");
   const {auth } = useContext(AuthContext)
   const code = sessionStorage.getItem('code')
-
+const {round,setRound} = useContext(UserContext)
   const getRoundNo=()=>
   {
     get(child(ref(db), `sessionData/${code}/state`)).then((snapshot) => {
@@ -54,66 +54,15 @@ onValue(starCountRef, (snapshot) => {
 
   }
   useEffect(() => {
-    //console.log(auth);\
+    console.log(round);
     getRoundNo()
     if (!auth) {
       movetoNextRound()
-      
     }
     console.log(roundNo);
-    /*sessionStorage.removeItem("time-val");
-    sessionStorage.removeItem("time-format");
-    sessionStorage.removeItem("time-percent");
-    if (sessionStorage.getItem("time-forma"))
-      setTimeFormat(sessionStorage.getItem("time-format"));
-    if (sessionStorage.getItem("active"))
-      setActive(JSON.parse(sessionStorage.getItem("active")));
-    if (sessionStorage.getItem("counter"))
-      setCounter(Number(sessionStorage.getItem("counter")));
-    socket.emit("join-game", sessionStorage.getItem("game-code"));
-    socket.on("next-round-started", roundNumber => {
-      window.location.href = `/round/${roundNumber}`;
-    });
-    socket.on("round-number", roundNumber => setRoundNo(roundNumber));
-    socket.on("message", ({ message }) => setWaitingMsg(message));
-    socket.on("game-over", () => (window.location.href = "/gameover"));
-    if (active) {
-      if (counter > 0) {
-        timerRef.current = setInterval(() => {
-          const secondCounter = counter % 60;
-          const minuteCounter = Math.floor(counter / 60);
-          const computedSecond =
-            String(secondCounter).length === 1
-              ? `0${secondCounter}`
-              : secondCounter;
-          const computedMinute =
-            String(minuteCounter).length === 1
-              ? `0${minuteCounter}`
-              : minuteCounter;
-          setTimeFormat(computedMinute + ":" + computedSecond);
-          sessionStorage.setItem(
-            "time-format",
-            computedMinute + ":" + computedSecond
-          );
-          setCounter(counter => counter - 1);
-          sessionStorage.setItem("active", true);
-          sessionStorage.setItem("counter", counter - 1);
-        }, 1000);
-      } else {
-        setCounter(0);
-        setTimeFormat("00:00");
-      }
-    }
-    return () => {
-      clearInterval(timerRef.current);
-    };*/
-  }, []);
+  }, [round]);
 
   const startGame = () => {
-    /*sessionStorage.removeItem("time-format");
-    sessionStorage.removeItem("active");
-    sessionStorage.removeItem("counter");
-    socket.emit("start-next-round", sessionStorage.getItem("game-code"));*/
     get(child(ref(db), `sessionData/${code}/hostProperties`)).then((snapshot) => {
       if (snapshot.exists()) {
         console.log(snapshot.val());
@@ -121,6 +70,7 @@ onValue(starCountRef, (snapshot) => {
         const updates = {};
         updates[`sessionData/${code}/hostProperties`] = {...res,nextRound:true};
         update(ref(db), updates);
+        setRound(round+1)
         navigate(`/round/${roundNo}`)
       } else {
         console.log("No data available");

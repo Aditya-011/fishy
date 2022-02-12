@@ -12,13 +12,14 @@ import { v4 as uuidv4 } from "uuid";
 function App() {
   const [userID, setuserID] = useState('');
   const [auth, setAuth] = useState(false);
+  const [round, setRound] = useState(1);
  useEffect(() => {
  setuserID(uuidv4())
  }, []);
 const [code, setcode] = useState('');
   return (
     <SocketContext.Provider value = {socket}>
-      <UserContext.Provider value={{userID,setuserID,code,setcode}}>
+      <UserContext.Provider value={{userID,setuserID,code,setcode,round,setRound}}>
       <AuthContext.Provider value={{auth,setAuth}}>
       <Toaster position="top-right" reverseOrder={false}/>
         <Routes code={code} setcode={setcode}></Routes>

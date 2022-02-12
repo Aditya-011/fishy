@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
-import { useParams,Link,useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Button from "../../../components/Button/Button";
 import DeckIcons from "../../../components/DeckIcons/DeckIcons";
 import FishOptions from "../../../components/FishOptions/FishOptions";
@@ -14,13 +14,16 @@ import "./GameRounds.css";
 import three from "../../../images/three.png";
 import five from "../../../images/five.png";
 import ten from "../../../images/ten.png";
-import { set, ref,get,child,update,onValue } from "firebase/database";
+import { set, ref, get, child, update, onValue } from "firebase/database";
 import { database as db } from "../../../firebase";
 import { UserContext } from "../../../context/context";
+import { useTimer } from "react-timer-hook";
+
 const GameRounds = () => {
   const timeP = useRef(120);
   const roundNo = useParams();
-  const navigate =useNavigate()
+  const navigate = useNavigate();
+
   let multiplier = useRef(0);
   const socket = useContext(SocketContext);
   const timerRef = useRef();
@@ -31,217 +34,164 @@ const GameRounds = () => {
   const [disabled, setDisabled] = useState(false);
   const [active, setActive] = useState([false, false]);
   const [score, showScore] = useState(false);
-  const [pause, setPause] = useState(false);
+  const [paused, setPause] = useState(false);
   const [indivScore, setIndivScore] = useState([]);
   let timerID = useRef(null);
   let playerName = sessionStorage.getItem("playerName");
-  let { code, userID } = useContext(UserContext);
+  let { code, userID, round } = useContext(UserContext);
 
-const checkIfOver =()=>
-{
-  const starCountRef = ref(db, `sessionData/${code}/hostProperties/isOver`);
-onValue(starCountRef, (snapshot) => {
-  const isOver = snapshot.val();
- //console.log(data);
- if(isOver)
- {
-  navigate(`/player/results/${roundNo.id}`)
- 
- }
-});
-}
-  useEffect(() => {
-    console.log(code);
-    console.log(roundNo);
-    console.log("sessionData/" + code + "/eye/" + userID);
-    checkIfOver()
-    if (roundNo.id>10) {
-      navigate(`/gameover`)
-    }
-   else if (code && userID) {
-    get(child(ref(db), `users/${userID}`)).then((snapshot) => {
+  const getTimer =()=>
+  {
+    get(child(ref(db),`sessions/${code}/properties`)).then((snapshot) => {
       if (snapshot.exists()) {
-       const name = snapshot.val().name
-       console.log(name);
-       set(ref(db, "sessionData/" + code + "/hostProperties/eye/" + userID), {
-        isTrue: false,
-      });
-      set(ref(db, "sessionData/" + code + "/state/" + roundNo.id+'/'+userID), {
-      
-        eye:false,
-        name ,
-        indivScore: 0,
-        isSelected: {
-          status: false,
-          choice: 0,
-        },
-        isSubmit: {
-          status: false,
-          choice: 0,
-        },
-      });
-     } else {
+      const res = Object.values(snapshot.val())
+      setTime(res[3])
+      //console.log(res);
+      } else {
         console.log("No data available");
       }
     }).catch((error) => {
       console.error(error);
     });
-  
-      setChoice(0)
-      setDisabled(false)
-      setActive([false, false])
-    }
+    
+  }
 
-  /*  socket.emit("join-players", { code, playerName });
-    socket.on("choice", (choice) => {
-      choice === 1 ? setActive([true, false]) : setActive([false, true]);
-      setDisabled(true);
-      setChoice(choice);
-    });
-
-    socket.on("new-timer", (newTimer) => {
-      if (!sessionStorage.getItem("time-val")) {
-        setTime(newTimer);
-      }
-      timeP.current = newTimer;
-    });
-
-    if (sessionStorage.getItem("time-format")) {
-      if (sessionStorage.getItem("time-val")) {
-        setTime(Number(sessionStorage.getItem("time-val")));
-        setTimeFormat(sessionStorage.getItem("time-format"));
-      }
-    }
-
-    socket.on("pause-status", (bool) => setPause(bool));
-    socket.on("disabled-status", (bool) => setDisabled(bool));
-    socket.on("indivScore", (indivScore) => setIndivScore(indivScore));
-    socket.on("showChoices", () => {
-      sessionStorage.removeItem("time-format");
-      sessionStorage.removeItem("time-percent");
-      sessionStorage.removeItem("time-val");
-      window.location.href = `/player/results/${roundNo.id}`;
-    });
-
-    socket.on("quit-game", () => {
-      console.log("Hi");
-      window.location.href = "/game";
-    });
-
-    socket.on("updateChoice", (updatedChoice) => {
-      console.log("updated choice", updatedChoice);
-      if (updatedChoice.name === playerName) {
-        setChoice(updatedChoice.choice);
+  const checkIfOver = () => {
+    const starCountRef = ref(db, `sessionData/${code}/hostProperties/isOver`);
+    onValue(starCountRef, (snapshot) => {
+      const isOver = snapshot.val();
+      //console.log(data);
+      if (isOver) {
+        navigate(`/player/results/${roundNo.id}`);
       }
     });
-    return () => {
-      sessionStorage.removeItem("time-format");
-      sessionStorage.removeItem("time-percent");
-      sessionStorage.removeItem("time-val");
-    };
-    /*
-     */
-  }, [roundNo.id]);
-
+  };
   useEffect(() => {
-    /* let active = false;
-    if (!active && !pause) {
-      if (time !== 0) {
-        timerRef.current = setInterval(() => {
-          const secondCounter = time % 60;
-          const minuteCounter = Math.floor(time / 60);
-          setTime(time - 1);
-          sessionStorage.setItem("time-val", time - 1);
-          const computedSecond =
-            String(secondCounter).length === 1
-              ? `0${secondCounter}`
-              : secondCounter;
-          const computedMinute =
-            String(minuteCounter).length === 1
-              ? `0${minuteCounter}`
-              : minuteCounter;
-          sessionStorage.setItem(
-            "time-format",
-            computedMinute + ":" + computedSecond
-          );
-          setTimeFormat(computedMinute + ":" + computedSecond);
-          let originalTime = timeP.current;
-          // console.log(timeP.current);
-          // console.log(time);
-          const percent = 100 - ((originalTime - time) / originalTime) * 100;
-          // console.log(percent);
-          setTimePercent(percent);
-        }, 1000);
-      } else {
-        setTime(0);
-        setTimeFormat("0:00");
-        setTimePercent(0);
-        socket.emit("submit", { choice, playerName, code });
-        setDisabled(true);
-        Number(choice) === 1
-          ? setActive([true, false])
-          : setActive([false, true]);
-        sessionStorage.setItem("time-val", 0);
-        sessionStorage.setItem("time-format", "0:00");
-      }
+    console.log(code);
+    console.log(roundNo);
+    getTimer()
+    console.log(time);
+    console.log("sessionData/" + code + "/eye/" + userID);
+    checkIfOver();
+    if (roundNo.id > 10) {
+      navigate(`/gameover`);
+    } else if (code && userID) {
+      get(child(ref(db), `users/${userID}`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const name = snapshot.val().name;
+            console.log(name);
+            set(
+              ref(db, "sessionData/" + code + "/hostProperties/eye/" + userID),
+              {
+                isTrue: false,
+              }
+            );
+            set(
+              ref(
+                db,
+                "sessionData/" + code + "/state/" + roundNo.id + "/" + userID
+              ),
+              {
+                eye: false,
+                name,
+                indivScore: 0,
+                isSelected: {
+                  status: false,
+                  choice: 0,
+                },
+                isSubmit: {
+                  status: false,
+                  choice: 0,
+                },
+              }
+            );
+          } else {
+            console.log("No data available");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
+      setChoice(0);
+      setDisabled(false);
+      setActive([false, false]);
     }
-
-    return () => {
-      clearInterval(timerRef.current);
-      active = true;
-    };*/
-  }, [timerRef, time, pause, choice, code, playerName, socket]);
-
-  useEffect(() => {}, [socket, time]);
+  }, [round]);
 
   const selectChoice = (num) => {
     num === 1 ? setActive([true, false]) : setActive([false, true]);
     setChoice(num);
     console.log("choice made", num);
     const dbRef = ref(db);
-    get(child(dbRef, 'sessionData/'+code+'/state/'+roundNo.id+'/'+ userID+'/')).then((snapshot) => {
-      if (snapshot.exists()) {
-        var data = snapshot.val()
-      //  data.isSelected.status = true
-       // data.isSelected.choice=num
-        const updates = {};
-        updates['sessionData/'+code+'/state/'+roundNo.id+'/'+userID] = {...data,isSelected:{
-          choice :num,
-          status :true
-        }};
-        console.log(snapshot.val());
-        update(ref(db), updates);
-      } else {
-        console.log("No data available");
-      }
-    }).catch((error) => {
-      console.error(error);
-    });
-  //  socket.emit("toggle", { num, playerName, code });
+    get(
+      child(
+        dbRef,
+        "sessionData/" + code + "/state/" + roundNo.id + "/" + userID + "/"
+      )
+    )
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          var data = snapshot.val();
+          //  data.isSelected.status = true
+          // data.isSelected.choice=num
+          const updates = {};
+          updates[
+            "sessionData/" + code + "/state/" + roundNo.id + "/" + userID
+          ] = {
+            ...data,
+            isSelected: {
+              choice: num,
+              status: true,
+            },
+          };
+          console.log(snapshot.val());
+          update(ref(db), updates);
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    //  socket.emit("toggle", { num, playerName, code });
   };
 
   const submitChoice = () => {
     //socket.emit("submit", { choice, playerName, code });
     //cearInterval(timerID);
     const dbRef = ref(db);
-    get(child(dbRef, 'sessionData/'+code+'/state/'+roundNo.id+'/'+ userID+'/')).then((snapshot) => {
-      if (snapshot.exists()) {
-        var data = snapshot.val()
-      //  data.isSelected.status = true
-       // data.isSelected.choice=num
-        const updates = {};
-        updates['sessionData/'+code+'/state/'+roundNo.id+'/'+userID] = {...data,isSubmit:{
-          choice,
-          status :true
-        }};
-        console.log(snapshot.val());
-        update(ref(db), updates);
-      } else {
-        console.log("No data available");
-      }
-    }).catch((error) => {
-      console.error(error);
-    });
+    get(
+      child(
+        dbRef,
+        "sessionData/" + code + "/state/" + roundNo.id + "/" + userID + "/"
+      )
+    )
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          var data = snapshot.val();
+          //  data.isSelected.status = true
+          // data.isSelected.choice=num
+          const updates = {};
+          updates[
+            "sessionData/" + code + "/state/" + roundNo.id + "/" + userID
+          ] = {
+            ...data,
+            isSubmit: {
+              choice,
+              status: true,
+            },
+          };
+          console.log(snapshot.val());
+          update(ref(db), updates);
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
     setDisabled(true);
     Number(choice) === 1 ? setActive([true, false]) : setActive([false, true]);
   };
@@ -275,7 +225,7 @@ onValue(starCountRef, (snapshot) => {
             </p>
           ) : null}
         </div>
-        <Timer time={timeFormat} completed={timePercent} />
+        <Timer completed={timePercent} round={roundNo.id} timer={time} />
       </div>
       <div
         className="flex mt-2 md:flex-nowrap justify-center items-center overflow-y-hidden"
@@ -299,26 +249,27 @@ onValue(starCountRef, (snapshot) => {
         </div>
       </div>
       {disabled ? (
-       <div>
+        <div>
           <button
-          className="text-warning bg-btn-bg-primary btn-lg bg-center w-25 self-center disabled:opacity-50 cursor-default"
-          disabled
-        >
-          Submit
-        </button>
-        {// REMOVE ME
-        }
-        <Link
-          to={{
-            pathname: `/round/${Number(roundNo.id) + 1 }`,
-          }}
-        >
-          <Button
-            display={"bg-btn-bg-primary bg-center btn-lg"}
-            text={"Start Game"}
-          />
-        </Link>
-       </div>
+            className="text-warning bg-btn-bg-primary btn-lg bg-center w-25 self-center disabled:opacity-50 cursor-default"
+            disabled
+          >
+            Submit
+          </button>
+          {
+            // REMOVE ME
+          }
+          <Link
+            to={{
+              pathname: `/round/${Number(roundNo.id) + 1}`,
+            }}
+          >
+            <Button
+              display={"bg-btn-bg-primary bg-center btn-lg"}
+              text={"Start Game"}
+            />
+          </Link>
+        </div>
       ) : (
         <Button
           text={"Submit"}

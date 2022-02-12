@@ -12,6 +12,7 @@ const Scoreboard = () => {
   const socket = useContext(SocketContext);
   const navigate = useNavigate();
   const code = sessionStorage.getItem("code");
+  const round = useContext(UserContext)
   const [scoreData, setScores] = useState([]);
   const [playerData, setPlayers] = useState([]);
   const [show, setShow] = useState(false);
@@ -22,6 +23,7 @@ const Scoreboard = () => {
           const data = Object.values(snapshot.val());
           console.log(data);
           setPlayers(data);
+          return
         } else {
           console.log("No data available");
         }
@@ -31,15 +33,27 @@ const Scoreboard = () => {
       });
   };
   const getPlayersData = () => {
-    onValue(ref(db, `sessionData/${code}/state`), (snapshot) => {
+    get(child(ref(db), `sessionData/${code}/state`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        console.log(snapshot.val());
+        const data = Object.values(snapshot.val());
+        console.log(data);
+        setScores(data);
+      } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error(error);
+    });
+  /*  onValue(ref(db, `sessionData/${code}/state`), (snapshot) => {
       console.log(`sessionData/${code}/state`);
       //  console.log(snapshot.val());
-      const data = Object.values(snapshot.val());
-      console.log(data);
-      setScores(data);
-    });
-  };
+     
+      return
+    });*/
+  }
   const waitingRoom = () => {
+    console.log('kuhg');
     const starCountRef = ref(db, `sessionData/${code}/hostProperties`);
     onValue(starCountRef, (snapshot) => {
       const res = snapshot.val();
@@ -50,10 +64,15 @@ const Scoreboard = () => {
     });
   };
   useEffect(() => {
+    //console.log('khjvhgtfyrdctdr');
     getPlayers();
     getPlayersData();
-    waitingRoom();
+    
   }, []);
+  useEffect(()=>
+  {
+    waitingRoom();
+  },[round])
   return (
     <div className="flex flex-col justify-center items-center h-screen">
       <div className="md:w-96 xs-mobile:w-9/12">
