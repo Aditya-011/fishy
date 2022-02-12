@@ -1,128 +1,74 @@
 import React, { useState, useEffect, useContext } from 'react';
-import Button from '../../../components/Button/Button';
-import './PlayerScreen.css';
-import { database as db } from '../../../firebase';
-import { ref, child, get, push, update } from 'firebase/database';
-import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../../../context/context';
-<<<<<<< HEAD
+
+import { CodeContext, UserContext } from '../../../context/context';
+
+import Button from '../../../components/Button/Button';
+
+import './PlayerScreen.css';
+
+import { database as db } from '../../../firebase';
+import { ref, child, get, push, update, set } from 'firebase/database';
+
+import { toast } from 'react-hot-toast';
+import useFirebaseRef from '../../../components/useFirebaseRef';
+
 const PlayerScreen = () => {
 	const Navigate = useNavigate();
 	const user = useContext(UserContext);
-	const [inputCode, setInputCode] = useState('');
+	const { code, setCode } = useContext(CodeContext);
 	const [playerName, setPlayerName] = useState('');
+	const [session, loading] = useFirebaseRef(`sessions/${code}`);
+
 	useEffect(() => {
-		sessionStorage.setItem('status', 0);
 		console.log(user);
 	}, []);
-=======
-import "./PlayerScreen.css";
-import { database as db } from "../../../firebase";
-import { ref, child, get, push, update,set } from "firebase/database";
-import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
-const PlayerScreen = () => {
-  const navigate = useNavigate()
-  const {userID,setcode} = useContext(UserContext);
-  const [inputCode, setInputCode] = useState("");
-  const [playerName, setPlayerName] = useState("");
-  useEffect(() => {
-    sessionStorage.setItem("status", 0);
-    console.log(userID);
-    /*   socket.on("error", ({ message }) => {
-      if (!code) {
-        alert(message);
-        correctCode(true);
-      }
-    });*/
-  }, []);
->>>>>>> 3634a7ec6348204a9a32dfaa18edf23b98710c0d
 
 	const enterGame = async () => {
 		// check for room in rdb
-		if (inputCode.length && playerName.length) {
-			const dbRef = ref(db);
-			console.log(inputCode);
-			get(child(dbRef, `sessions/${inputCode}`))
-				.then((snapshot) => {
-					if (snapshot.exists()) {
-						console.log(snapshot.val());
-						const newUser = {
-							name: playerName,
-							role: 'player',
-							rounds: [],
-						};
-						const newPostKey = push(
-							child(ref(db), `sessions/${inputCode}/users`)
-						).key;
-						const newUserKey = push(child(ref(db), `users`)).key;
+		if (code.length && playerName.length) {
+			if (session) {
+				const newUser = {
+					name: playerName,
+					role: 'player',
+					rounds: [],
+				};
+				/* set(child(ref(db), `sessions/${code}/users`));
+				set(child(ref(db), `users`)); */
 
-						console.log(user);
-						const updates = {};
-						updates[`sessions/${inputCode}/users/` + user.id] = newUser;
-						updates[`users/` + user.id] = {
-							[user.id]: {
-								name: playerName,
-							},
-						};
-						update(ref(db), updates);
-
-<<<<<<< HEAD
-						//window.location.href = `/lobby/${inputCode}`;
-						Navigate(`/lobby/${inputCode}`);
-					} else {
-						console.log('No data available');
-						toast.error('Lobby doesnot exist');
-					}
-				})
-				.catch((error) => {
-					console.error(error);
-					toast.error(error);
+				console.log(user);
+				const updates = {};
+				updates[`sessions/${code}/users/` + user.id] = newUser;
+				updates[`users/` + user.id] = {
+					name: playerName,
+				};
+				update(ref(db), updates);
+				set(ref(db, 'sessionData/' + code + '/hostProperties/eye/' + user.id), {
+					isTrue: false,
 				});
+				set(ref(db, 'sessionData/' + code + '/state/1/' + user.id), {
+					eye: false,
+					name: playerName,
+					indivScore: 0,
+					isSelected: {
+						status: false,
+						choice: 0,
+					},
+					isSubmit: {
+						status: false,
+						choice: 0,
+					},
+				});
+
+				//window.location.href = `/lobby/${code}`;
+				Navigate(`/lobby/${code}`);
+			} else {
+				console.log('No data available');
+				toast.error('Lobby doesnot exist');
+			}
 			console.log('enter game');
 		}
 	};
-=======
-    // check for room in rdb
-    if (inputCode.length && playerName.length) {
-      const dbRef = ref(db);
-      setcode(inputCode)
-    
-      console.log(inputCode);
-      get(child(dbRef, `sessions/${inputCode}`))
-        .then((snapshot) => {
-          if (snapshot.exists()) {
-            console.log(snapshot.val());
-            const newUser = {
-              name: playerName,
-              role: "player",
-              rounds : [
-               
-              ]
-            };
-            const newPostKey = push(
-              child(ref(db), `sessions/${inputCode}/users`)
-            ).key;
-            const newUserKey =  push(
-              child(ref(db), `users`)
-            ).key;
-            const addUser={}
-           
-           // console.log(`key ${newPostKey}`);
-            const updates = {};
-            updates[`sessions/${inputCode}/users/` + userID] = newUser;
-              updates[`users/`+userID] = {
-              
-                name: playerName
-              };
-              update(ref(db), updates);
-              set(ref(db, 'sessionData/' + inputCode+'/hostProperties/eye/'+userID), {
-                isTrue :false
-              });
-             //window.location.href = `/lobby/${inputCode}`;
-             navigate(`/lobby/${inputCode}`)
->>>>>>> 3634a7ec6348204a9a32dfaa18edf23b98710c0d
 
 	return (
 		<div className="flex flex-col bg-card bg-no-repeat bg-cover bg-blend-screen rounded-none px-8 pt-6 pb-8 h-full">
@@ -136,9 +82,9 @@ const PlayerScreen = () => {
 				<input
 					type="text"
 					placeholder="Eg:12345"
-					value={inputCode}
+					value={code}
 					className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-					onChange={(e) => setInputCode(e.target.value)}
+					onChange={(e) => setCode(e.target.value)}
 					required
 				></input>
 			</div>
@@ -160,11 +106,13 @@ const PlayerScreen = () => {
 				></input>
 			</div>
 			<div className="self-center join-btn">
-				<Button
-					display={`bg-btn-primary`}
-					text="Join"
-					clickHandler={enterGame}
-				/>
+				{!loading ? (
+					<Button
+						display={`bg-btn-primary`}
+						text="Join"
+						clickHandler={enterGame}
+					/>
+				) : null}
 			</div>
 		</div>
 	);

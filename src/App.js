@@ -17,14 +17,14 @@ import Endgame from './screens/Endgame/Endgame';
 import Waiting from './screens/Waiting/Waiting';
 
 // import { SocketContext, socket } from './context/SocketContext';
-import { UserContext, AuthContext } from './context/context';
+import { UserContext, AuthContext, CodeContext } from './context/context';
 // import Routes from './Routes';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
 	const [authUser, setAuthUser] = useState(false);
 	const [user, setUser] = useState(null);
-	const [code, setcode] = useState('');
+	const [code, setCode] = useState('');
 
 	useEffect(() => {
 		return onAuthStateChanged(auth, (userObj) => {
@@ -85,26 +85,24 @@ function App() {
 		<BrowserRouter>
 			<UserContext.Provider value={user}>
 				<AuthContext.Provider value={{ authUser, setAuthUser }}>
-					<Toaster position="top-right" reverseOrder={false} />
-					{/* <Routes code={code} setcode={setcode}></Routes> */}
-					<Routes>
-						<Route path="/" exact element={<Home />} />
-						<Route path="/game" exact element={<Intro />} />
-						<Route
-							path="/admin/link"
-							exact
-							element={<GenerateLink code={code} setcode={setcode} />}
-						/>
-						<Route path="/Rules" exact element={<Carousel />} />
-						<Route path="/lobby/:id" element={<Lobby />} />
-						<Route path="/waiting" element={<Waiting />} />
-						<Route path="/round/:id" element={<Game />} />
-						<Route path="/host/results/:id" element={<RevealScores />} />
-						<Route path="/player/results/:id" element={<SeeResults />} />
-						<Route path="/host/scores" element={<Scoreboard />} />
-						<Route path="/player/scores" element={<PlayerScoreboard />} />
-						<Route path="/gameover" element={<Endgame />} />
-					</Routes>
+					<CodeContext.Provider value={{ code, setCode }}>
+						<Toaster position="top-right" reverseOrder={false} />
+						{/* <Routes code={code} setcode={setcode}></Routes> */}
+						<Routes>
+							<Route path="/" exact element={<Home />} />
+							<Route path="/game" exact element={<Intro />} />
+							<Route path="/admin/link" exact element={<GenerateLink />} />
+							<Route path="/Rules" exact element={<Carousel />} />
+							<Route path="/lobby/:id" element={<Lobby />} />
+							<Route path="/waiting" element={<Waiting />} />
+							<Route path="/round/:id" element={<Game />} />
+							<Route path="/host/results/:id" element={<RevealScores />} />
+							<Route path="/player/results/:id" element={<SeeResults />} />
+							<Route path="/host/scores/" element={<Scoreboard />} />
+							<Route path="/player/scores/" element={<PlayerScoreboard />} />
+							<Route path="/gameover" element={<Endgame />} />
+						</Routes>
+					</CodeContext.Provider>
 				</AuthContext.Provider>
 			</UserContext.Provider>
 		</BrowserRouter>

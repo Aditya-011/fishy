@@ -4,7 +4,11 @@ import Tab from 'react-bootstrap/Tab';
 
 import './GenerateLink.css';
 
-import { UserContext } from '../../../context/context';
+import {
+	UserContext,
+	CodeContext,
+	AuthContext,
+} from '../../../context/context';
 import Settings from '../Settings/Settings';
 import Rules from '../../Rules/Rules';
 import Refresh from '../../../images/refresh.png';
@@ -19,9 +23,12 @@ import NavComponent from '../../../components/NavComponent';
 
 import { database as db } from '../../../firebase';
 import { ref, set, get, child, push, update } from 'firebase/database';
+import useFirebaseRef from '../../../components/useFirebaseRef';
 
-const GenerateLink = ({ code, setcode }) => {
+const GenerateLink = () => {
 	const user = useContext(UserContext);
+	const { authUser } = useContext(AuthContext);
+	const { code, setCode } = useContext(CodeContext);
 	const [waiting, setWaiting] = useState(false);
 	const [settings, showSettings] = useState(false);
 	const [rules, showRules] = useState(false);
@@ -49,21 +56,18 @@ const GenerateLink = ({ code, setcode }) => {
 			const gameId = generateCode(7);
 			if (checkIfExists(code)) {
 				++attempts;
-				setcode(gameId);
+				setCode(gameId);
 				continue;
 			} else {
 				set(ref(db, 'sessions/' + code), {
 					properties: {
 						timer,
+						isStarted: false,
+						isOver: false,
 						host: {
 							userID,
 							name: 'Logan',
 						},
-					},
-				});
-				set(ref(db, 'sessionData/' + code), {
-					state: {
-						r1: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
 					},
 				});
 				set(ref(db, 'users/' + userID), {
@@ -80,7 +84,7 @@ const GenerateLink = ({ code, setcode }) => {
 		alert('Error: Could not find an available game ID.');
 	};
 
-	const checkIfExists = () => {
+	const checkIfExists = (code) => {
 		const dbRef = ref(db);
 		console.log(code);
 		get(child(dbRef, `sessions/${code}`))
@@ -96,8 +100,7 @@ const GenerateLink = ({ code, setcode }) => {
 			});
 	};
 	useEffect(() => {
-		sessionStorage.setItem('status', 1);
-		setcode(generateCode(7));
+		setCode(generateCode(7));
 	}, []);
 
 	/* const createRoom = () => {
@@ -135,7 +138,7 @@ const GenerateLink = ({ code, setcode }) => {
 		<div className="flex flex-col h-screen w-full">
 			<div className="flex flex-col justify-center items-start w-full">
 				<div className="block mt-2">
-					{sessionStorage.getItem('status') === '1' ? (
+					{authUser ? (
 						<Icons
 							icon={SettingIcon}
 							clickHandler={() => showSettings(!settings)}
@@ -165,19 +168,11 @@ const GenerateLink = ({ code, setcode }) => {
 			</div>
 			{!waiting ? (
 				<div className="m-auto mt-5">
-					<Link
-						to={{
-							pathname: `/lobby/${code}`,
-							aboutProps: {
-								value: { code },
-							},
-						}}
-					>
+					<Link to={`/lobby/${code}`}>
 						<Button
 							display={'bg-btn-bg-primary text-warning'}
 							text={'Next'}
 							clickHandler={() => {
-								sessionStorage.setItem('game-code', code);
 								newRoom();
 							}}
 						/>

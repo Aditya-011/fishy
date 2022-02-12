@@ -1,8 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import FlashCard from '../../components/Flashcard/Flashcard';
 import Button from '../../components/Button/Button';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { UserContext, AuthContext } from '../../context/context';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { UserContext, AuthContext, CodeContext } from '../../context/context';
 import './Lobby.css';
 import { database as db } from '../../firebase';
 import {
@@ -15,88 +15,117 @@ import {
 	updateStarCount,
 	onSnapshot,
 	doc,
+	set,
 } from 'firebase/database';
+import useFirebaseRef from '../../components/useFirebaseRef';
 
 const Lobby = () => {
-	const Navigate = useNavigate();
+	const navigate = useNavigate();
+	const [isStarted, setisStarted] = useState(false);
 	const { authUser, setAuthUser } = useContext(AuthContext);
-	const { user } = useContext(UserContext);
-	let { id } = useParams();
-	var Players;
-	// const lobby = JSON.parse(sessionStorage.getItem('lobby'));
-	const [players, setPlayers] = useState([]);
-	// let status = Number(sessionStorage.getItem('status'));
+	const { code } = useContext(CodeContext);
+	const user = useContext(UserContext);
+	const [properties, loading] = useFirebaseRef(
+		'sessions/' + code + '/properties'
+	);
+	const [players] = useFirebaseRef('sessions/' + code + '/users');
+	/* var Players;
+	const [players, setPlayers] = useState([]); */
+	// const { id } = useParams();
+	/* let code = id;
+	if (!code) {
+		if (location.state) code = location.state.code;
+		console.log(code);
+	}
+	console.log(code); */
 	const clickHandler = () => {
-		Navigate(`/round/${id}`);
-	};
-	const getRoomProperties = () => {
-		const starCountRef = ref(db, `sessions/${id}/properties`);
-		onValue(starCountRef, (snapshot) => {
-			console.log(snapshot.val());
-			if (snapshot.val()) {
-				if (snapshot.val().host.userID === user.uid) {
-					setAuthUser(true); // console.log(properties);
-				}
-			}
-		});
-	};
-	const getUsers = () => {
-		const starCountRef = ref(db, 'sessions/' + id + '/users');
-		onValue(starCountRef, (snapshot) => {
-			if (snapshot.val()) {
-				Players = Object.values(snapshot.val());
-				console.log(Players);
-				if (Players) {
-					setPlayers(Players);
-				}
-			}
-		});
+		if (properties) {
+			//console.log(snapshot.val());
+			const data = properties;
+			const updates = {};
+			updates['sessions/' + code + '/properties'] = {
+				...data,
+				isStarted: true,
+			};
+			update(ref(db), updates);
+		} else {
+			console.log('No data available');
+		}
 	};
 
-	//getUsers()
+	const isAuthUser = () => {
+		if (properties) {
+			if (properties.host.userID === user.id) {
+				setAuthUser(true); // console.log(properties);
+			}
+		}
+	};
+
+	const watchIfStarted = () => {
+		if (properties && properties.isStarted === true) {
+			console.log('yes');
+			console.log(players);
+			Object.entries(players).forEach((element) => {
+				console.log(element);
+			});
+			/* set(
+				ref(
+					db,
+					'sessionData/' + code + '/state/1/' + userID
+				),
+				{
+					eye: false,
+					name,
+					indivScore: 0,
+					isSelected: {
+						status: false,
+						choice: 0,
+					},
+					isSubmit: {
+						status: false,
+						choice: 0,
+					},
+				}
+			); */
+			navigate(`/round/${1}`, {
+				state: {
+					code,
+				},
+			});
+		}
+	};
+
 	useEffect(() => {
-		console.log(user.uid);
-
-		getUsers();
+		console.log(user.id);
 		console.log(authUser);
-		//console.log(lobby);
-	}, []);
-	useEffect(() => {
-		getRoomProperties();
-		//console.log(auth);
-	}, []);
+		console.log(code);
+		watchIfStarted();
+		isAuthUser();
+	}, [properties]);
+
 	return (
 		<div className="flex flex-col items-center justify-center h-full pt-2">
 			<div className="">
 				<FlashCard text={'Players'} />
 			</div>
 			<div className="room-code">
-				<FlashCard text={`Room Code : ${id}`} />
+				<FlashCard text={`Room Code : ${code}`} />
 			</div>
 			<ul className="list-none inline-flex self-center justify-center items-center xs-mobile:flex-wrap md:flex-nowrap">
 				{players
-					? players.map((player, index) => (
+					? Object.values(players).map((player, index) => (
 							<li key={index} className={'inline-block mt-4 p-3'}>
 								<FlashCard text={player.name} />
 							</li>
 					  ))
 					: console.log(1)}
 			</ul>
-			{authUser ? (
-				<Link
-					to={{
-						pathname: `/round/${1}`,
-						state: {
-							value: { players },
-						},
-					}}
-				>
-					<Button
-						display={'bg-btn-bg-primary bg-center btn-lg'}
-						text={'Start Game'}
-						clickHandler={clickHandler}
-					/>
-				</Link>
+			{authUser && !loading ? (
+				<Button
+					display={'bg-btn-bg-primary bg-center btn-lg'}
+					text={'Start Game'}
+					clickHandler={clickHandler}
+				/>
 			) : null}
 		</div>
 	);
