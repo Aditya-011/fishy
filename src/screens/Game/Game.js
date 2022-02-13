@@ -1,27 +1,15 @@
-import { useContext, useEffect } from 'react'
-import { SocketContext } from '../../context/SocketContext'
-import Discussion from '../Host/Discussion/Discussion'
-import GameRounds from '../Player/GameRounds/GameRounds'
+import { useContext, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import useFirebaseRef from '../../components/useFirebaseRef';
+import { AuthContext } from '../../context/context';
+import Discussion from '../Host/Discussion/Discussion';
+import GameRounds from '../Player/GameRounds/GameRounds';
 
-const Game = (props) => {
-    let status = Number(sessionStorage.getItem('status'))
-    const socket = useContext(SocketContext)
-    let players = JSON.parse(sessionStorage.getItem('players'))
-    console.log(status);
-    useEffect(() => {
-        socket.on('end-game', () => window.location.href = '/gameover')
-    })
-    
-    return (
-        <div>
-        {
-        status === 1?
-        (<Discussion players = {players}/>)
-        :
-        (<GameRounds players = {players}/>)
-        }
-        </div>
-    )
-}
+const Game = () => {
+	const { authUser } = useContext(AuthContext);
+	// const [properties] = useFirebaseRef('sessions/' + code + '/properties')
 
-export default Game
+	return <div>{authUser ? <Discussion /> : <GameRounds />}</div>;
+};
+
+export default Game;

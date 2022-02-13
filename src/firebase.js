@@ -1,19 +1,30 @@
-import { initializeApp } from "firebase/app";
-import { getDatabase } from "firebase/database";
+import { initializeApp } from 'firebase/app';
+import {
+	getAuth,
+	signInAnonymously,
+	onAuthStateChanged,
+	connectAuthEmulator,
+} from 'firebase/auth';
+import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
+import { connectFunctionsEmulator } from 'firebase/functions';
+import { getAnalytics } from 'firebase/analytics';
 
-// TODO: Replace with your app's Firebase project configuration
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_API_KEY,
-  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
-  databaseURL:
-    process.env.REACT_APP_DB_URL,
-  projectId: process.env.REACT_APP_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_MSG_SENDER_ID,
-  appId: process.env.REACT_APP_APP_ID,
-};
+import config, { isDev } from './config';
 
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(config.firebase);
+export const auth = getAuth(app);
+console.log(auth);
 
 // Get a reference to the database service
 export const database = getDatabase(app);
+
+if (isDev) {
+	connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+	connectDatabaseEmulator(database, 'localhost', 9000);
+	// connectFunctionsEmulator(function,"localhost",5001);
+} else {
+	getAnalytics(app);
+}
+
+export { signInAnonymously, onAuthStateChanged };
+// export { ref, onValue, off, child, update };
