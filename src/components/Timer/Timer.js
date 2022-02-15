@@ -14,20 +14,29 @@ function MyTimer({ expiryTimestamp, toggle, code, round }) {
   const navigate = useNavigate();
   const { authUser } = useContext(AuthContext);
   const { user } = useContext(UserContext);
-  const userID = user.uid
+  const userID = user.uid;
   const path = authUser
     ? `sessionData/${code}/hostProperties`
     : `sessionData/${code}/state/${round}/${userID}`;
   //  console.log(path);
   const [roundData, loading] = useFirebaseRef(path);
+  const [stopStatus, loading2] = useFirebaseRef(
+    `sessionData/${code}/hostProperties`
+  );
   const expiryHandler = () => {
-    if (authUser && !loading) {
+    if (authUser) {
       const updates = {};
       updates[path] = { ...roundData, isOver: true };
-      update(ref(db), updates);
+      setTimeout(() => {
+        update(ref(db), updates);
+      }, 400);
+      //update(ref(db), updates);
       navigate(`/host/results/${round}`);
     } else {
-      if (!loading) {
+      console.log(path);
+
+      console.log(roundData.isSubmit.status);
+      if (!roundData.isSubmit.status) {
         const updates = {};
         updates[path] = {
           ...roundData,
@@ -37,8 +46,9 @@ function MyTimer({ expiryTimestamp, toggle, code, round }) {
           },
         };
         update(ref(db), updates);
-        navigate(`/player/results/${round}`);
       }
+
+      // navigate(`/player/results/${round}`);
     }
   };
   const { seconds, minutes, isRunning, start, pause, resume, restart } =
@@ -49,51 +59,55 @@ function MyTimer({ expiryTimestamp, toggle, code, round }) {
         expiryHandler();
       },
     });
-  const [stop, setStop] = useState(false);
+
+  const setStopStatus = (bool) => {
+    if (!loading) {
+      const updates = {};
+      updates[`sessionData/${code}/hostProperties`] = {
+        ...stopStatus,
+        stopTimer: bool,
+      };
+      update(ref(db), updates);
+    }
+  };
   useEffect(() => {
     console.log(user);
-    getPlayStatus();
-    console.log(`timer status ${stop}`);
   }, []);
 
-  const getPlayStatus = () => {
-    const starCountRef = ref(db, `sessionData/${code}`);
-    onValue(starCountRef, (snapshot) => {
-      const res = Object.values(snapshot.val());
-      setStop(res[0].stopTimer);
-    });
-  };
-
+ 
   return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: "100px" }}>
         <span>{minutes}</span>:<span>{seconds}</span>
       </div>
-      {authUser ? (
+     
         <>
           {" "}
-          {/*toggle.toggle ? (
+          {toggle.toggle ? (
             <Icons
               clickHandler={() => {
-                updateStopTimer()
-              
+               pause();
+                setStopStatus(true);
                 toggle.settoggle(false);
               }}
+              status='pause'
+              style={authUser? {display : 'block'}:{display: 'none'}}
               icon={Pause}
             />
           ) : (
             <Icons
               clickHandler={() => {
-                updateStopTimer()
+                setStopStatus(false);
                 toggle.settoggle(true);
+                resume();
               }}
+              status='play'
+              style={authUser? {display : 'block'}:{display: 'none'}}
               icon={Resume}
             />
-            )*/}
+          )}
         </>
-      ) : (
-        <></>
-      )}
+      
     </div>
   );
 }
@@ -101,6 +115,8 @@ function MyTimer({ expiryTimestamp, toggle, code, round }) {
 const Timer = ({ timer, round }) => {
   const [time, setTime] = useState(new Date());
   const [toggle, settoggle] = useState(true);
+  const { authUser } = useContext(AuthContext);
+
   // 10 minutes timer
   // console.log(auth);
   const { code } = useContext(CodeContext);
@@ -124,7 +140,11 @@ const Timer = ({ timer, round }) => {
   useEffect(() => {
     getTime();
     console.log(timer);
-    setTime(time.setSeconds(time.getSeconds() + timer));
+    setTime(
+      time.setSeconds(
+        authUser ? time.getSeconds() + timer : time.getSeconds() + timer - 0.4
+      )
+    );
     console.log(time);
   }, []);
   return (

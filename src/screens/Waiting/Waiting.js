@@ -21,6 +21,7 @@ const Waiting = () => {
   const { code } = useContext(CodeContext);
 
   const [sessionData, loading] = useFirebaseRef(`sessionData/${code}`);
+  const [properties,loading2] = useFirebaseRef(`sessions/${code}/properties`)
   const time = new Date();
   const [player, loading1] = useFirebaseRef(`sessions/${code}/users`);
   useEffect(() => {
@@ -166,6 +167,9 @@ const Waiting = () => {
   };
 
   const endGame = () => {
+    const updates = {};
+  updates[`sessions/${code}/properties`] = {...properties,isOver:true};
+  update(ref(db), updates);
     navigate("/gameover");
   };
 

@@ -54,7 +54,9 @@ const GameRounds = () => {
 	const checkIfOver = () => {
 		if (isOver && !loading) {
 			console.log('Round Over');
-			navigate(`/player/results/${roundNo.id}`);
+			setTimeout(() => {
+				navigate(`/player/results/${roundNo.id}`);		
+			}, 700);
 		}
 	};
   useEffect(() => {
@@ -196,7 +198,7 @@ const GameRounds = () => {
 
 	const submitChoice = () => {
 		//cearInterval(timerID);
-		if (gameUser && !loading2) {
+		if (gameUser && !loading2 && choice>0) {
 			const updates = {};
 			updates['sessionData/' + code + '/state/' + roundNo.id + '/' + userID] = {
 				...gameUser,
@@ -207,11 +209,12 @@ const GameRounds = () => {
 			};
 			console.log(gameUser);
 			update(ref(db), updates);
+			setDisabled(true);
+		Number(choice) === 1 ? setActive([true, false]) : setActive([false, true]);
 		} else {
 			console.log('No data available');
 		}
-		setDisabled(true);
-		Number(choice) === 1 ? setActive([true, false]) : setActive([false, true]);
+		
 	};
 
 	const captureClick = () => {

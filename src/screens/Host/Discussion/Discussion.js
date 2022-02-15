@@ -15,6 +15,7 @@ import { set, ref, update, get, child, onValue } from 'firebase/database';
 import { database as db } from '../../../firebase';
 import { CodeContext, UserContext } from '../../../context/context';
 import './Discussion.css';
+import {toast} from 'react-hot-toast'
 import useFirebaseRef from '../../../components/useFirebaseRef';
 
 const Discussion = () => {
@@ -89,6 +90,10 @@ const Discussion = () => {
 			}
 			console.log('round over');
 			navigate(`/host/results/${roundNo.id}`);
+		}
+		else
+		{
+			toast.error("Waiting for players")
 		}
 	};
 

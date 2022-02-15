@@ -18,6 +18,7 @@ import {
 	set,
 } from 'firebase/database';
 import useFirebaseRef from '../../components/useFirebaseRef';
+import toast from 'react-hot-toast';
 
 const Lobby = () => {
 	const navigate = useNavigate();
@@ -39,7 +40,7 @@ const Lobby = () => {
 	}
 	console.log(code); */
 	const clickHandler = () => {
-		if (properties) {
+		if (properties && Object.keys(players).length === 2) {
 			//console.log(snapshot.val());
 			const data = properties;
 			const updates = {};
@@ -50,6 +51,7 @@ const Lobby = () => {
 			update(ref(db), updates);
 		} else {
 			console.log('No data available');
+			toast.error("Waiting for players")
 		}
 	};
 
