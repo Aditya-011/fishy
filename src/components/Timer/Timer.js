@@ -83,10 +83,10 @@ function MyTimer({ expiryTimestamp, toggle, code, round }) {
      
         <>
           {" "}
-          {toggle.toggle ? (
+          {/*toggle.toggle ? (
             <Icons
               clickHandler={() => {
-               pause();
+              // pause();
                 setStopStatus(true);
                 toggle.settoggle(false);
               }}
@@ -99,13 +99,13 @@ function MyTimer({ expiryTimestamp, toggle, code, round }) {
               clickHandler={() => {
                 setStopStatus(false);
                 toggle.settoggle(true);
-                resume();
+               // resume();
               }}
               status='play'
               style={authUser? {display : 'block'}:{display: 'none'}}
               icon={Resume}
             />
-          )}
+            )*/}
         </>
       
     </div>

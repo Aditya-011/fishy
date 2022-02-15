@@ -19,7 +19,7 @@ const Waiting = () => {
   const [waitingMsg, setWaitingMsg] = useState("");
   const { authUser } = useContext(AuthContext);
   const { code } = useContext(CodeContext);
-
+  const [disabled, setDisabled] = useState(false);
   const [sessionData, loading] = useFirebaseRef(`sessionData/${code}`);
   const [properties,loading2] = useFirebaseRef(`sessions/${code}/properties`)
   const time = new Date();
@@ -63,6 +63,7 @@ const Waiting = () => {
   };
   time.setSeconds(time.getSeconds() + 180); // 3 minutes timer
   function MyTimer({ expiryTimestamp }) {
+   
     const {
       seconds,
       minutes,
@@ -78,8 +79,9 @@ const Waiting = () => {
       onExpire: () => console.warn("onExpire called"),
     });
     useEffect(() => {
-      if (!active) {
-        //pause()
+      if (!active && !disabled) {
+        pause()
+        console.log(`paused ${disabled}`);
       }
     }, []);
 
@@ -89,14 +91,17 @@ const Waiting = () => {
         onClick={() => {
           if (active) {
             setActive(false);
-            console.log(`timer ${active}`);
+            console.log(`timer is pause`);
             //pause()
           } else {
             setActive(true);
-            // resume()
+            setDisabled(true)
+            console.log(`timer is play`);
+           //  resume()
           }
         }}
-        className="text-warning self-center text-8xl bg-black rounded-full px-3 py-3"
+        className="text-warning self-center text-8xl bg-black rounded-full px-3 py-3" 
+        disabled={disabled}
       >
         <div style={{ fontSize: "100px" }}>
           <span>{minutes}</span>:<span>{seconds}</span>
@@ -189,7 +194,7 @@ const Waiting = () => {
                 : "Discussion started!"}
             </h1>
 
-            <MyTimer expiryTimestamp={time} />
+            <MyTimer expiryTimestamp={time} active={active}/>
           </div>
         ) : null}
         {authUser ? (
