@@ -17,13 +17,13 @@ import five from '../../../images/five.png';
 import ten from '../../../images/ten.png';
 import './GameRounds.css';
 
-import { set, ref, get, child, update, onValue } from 'firebase/database';
+import { set, ref, update } from 'firebase/database';
 import { database as db } from '../../../firebase';
-import useFirebaseRef from '../../../components/useFirebaseRef';
+import useFirebaseRef from '../../../utils/useFirebaseRef';
 
 const GameRounds = () => {
 	// const timeP = useRef(120);
-	const roundNo = useParams();
+	const { roomId, id } = useParams();
 	const navigate = useNavigate();
 	let multiplier = useRef(0);
 	const timerRef = useRef();
@@ -36,173 +36,95 @@ const GameRounds = () => {
 	const [score, showScore] = useState(false);
 	const [pause, setPause] = useState(false);
 	const [indivScore, setIndivScore] = useState([]);
-	// let timerID = useRef(null);
 
 	const user = useContext(UserContext);
-	const { code } = useContext(CodeContext);
+	// const { code } = useContext(CodeContext);
 	const userID = user.id;
 
 	const [isOver, loading] = useFirebaseRef(
-		`sessionData/${code}/hostProperties/isOver`
+		`sessionData/${roomId}/hostProperties/isOver`
 	);
-	// console.log(userID);
 	const [users, loading1] = useFirebaseRef(`users/${userID}`);
 	const [gameUser, loading2] = useFirebaseRef(
-		'sessionData/' + code + '/state/' + roundNo.id + '/' + userID + '/'
+		'sessionData/' + roomId + '/state/' + id + '/' + userID + '/'
 	);
 
 	const checkIfOver = () => {
 		if (isOver && !loading) {
 			console.log('Round Over');
-			navigate(`/player/results/${roundNo.id}`);
+			navigate(`/game/${roomId}/player/results/${id}`);
 		}
 	};
 	useEffect(() => {
 		checkIfOver();
 	}, [isOver, loading]);
 	useEffect(() => {
-		console.log(code);
-		console.log(roundNo);
+		console.log(roomId);
+		console.log(id);
 		console.log(userID);
 
-		if (roundNo.id > 10) {
+		if (id > 10) {
 			navigate(`/gameover`);
-		} else if (code && userID) {
+		} else if (roomId && userID) {
 			console.log(users);
-			console.log(loading1);
 			if (users) {
 				const name = users.name;
 				console.log(name);
-				set(ref(db, 'sessionData/' + code + '/hostProperties/eye/' + userID), {
-					isTrue: false,
-				});
 				set(
-					ref(
-						db,
-						'sessionData/' + code + '/state/' + roundNo.id + '/' + userID
-					),
+					ref(db, 'sessionData/' + roomId + '/hostProperties/eye/' + userID),
 					{
-						eye: false,
-						name,
-						indivScore: 0,
-						isSelected: {
-							status: false,
-							choice: 0,
-						},
-						isSubmit: {
-							status: false,
-							choice: 0,
-						},
+						isTrue: false,
 					}
 				);
+				const playerRef = ref(
+					db,
+					'sessionData/' + roomId + '/state/' + id + '/' + userID
+				);
+				console.log(gameUser);
+				if (!loading2) {
+					if (gameUser)
+						set(playerRef, {
+							eye: gameUser.eye,
+							name,
+							indivScore: gameUser.indivScore,
+							isSelected: {
+								status: gameUser.isSelected.status,
+								choice: gameUser.isSelected.choice,
+							},
+							isSubmit: {
+								status: gameUser.isSubmit.status,
+								choice: gameUser.isSubmit.choice,
+							},
+						});
+					else {
+						set(playerRef, {
+							eye: false,
+							name,
+							indivScore: 0,
+							isSelected: {
+								status: false,
+								choice: 0,
+							},
+							isSubmit: {
+								status: false,
+								choice: 0,
+							},
+						});
+					}
+				}
 			} else {
 				console.log('No data available');
 			}
 
-			setChoice(0);
-			setDisabled(false);
-			setActive([false, false]);
+			setChoice(gameUser ? gameUser.isSelected.choice : 0);
+			setDisabled(gameUser ? gameUser.isSubmit.status : false);
+			gameUser && gameUser.isSelected.choice !== 0
+				? gameUser.isSelected.choice === 1
+					? setActive([true, false])
+					: setActive([false, true])
+				: setActive([false, false]);
 		}
-
-		/*  socket.emit("join-players", { code, playerName });
-    socket.on("choice", (choice) => {
-      choice === 1 ? setActive([true, false]) : setActive([false, true]);
-      setDisabled(true);
-      setChoice(choice);
-    });
-
-    socket.on("new-timer", (newTimer) => {
-      if (!sessionStorage.getItem("time-val")) {
-        setTime(newTimer);
-      }
-      timeP.current = newTimer;
-    });
-
-    if (sessionStorage.getItem("time-format")) {
-      if (sessionStorage.getItem("time-val")) {
-        setTime(Number(sessionStorage.getItem("time-val")));
-        setTimeFormat(sessionStorage.getItem("time-format"));
-      }
-    }
-
-    socket.on("pause-status", (bool) => setPause(bool));
-    socket.on("disabled-status", (bool) => setDisabled(bool));
-    socket.on("indivScore", (indivScore) => setIndivScore(indivScore));
-    socket.on("showChoices", () => {
-      sessionStorage.removeItem("time-format");
-      sessionStorage.removeItem("time-percent");
-      sessionStorage.removeItem("time-val");
-      window.location.href = `/player/results/${roundNo.id}`;
-    });
-
-    socket.on("quit-game", () => {
-      console.log("Hi");
-      window.location.href = "/game";
-    });
-
-    socket.on("updateChoice", (updatedChoice) => {
-      console.log("updated choice", updatedChoice);
-      if (updatedChoice.name === playerName) {
-        setChoice(updatedChoice.choice);
-      }
-    });
-    return () => {
-      sessionStorage.removeItem("time-format");
-      sessionStorage.removeItem("time-percent");
-      sessionStorage.removeItem("time-val");
-    };
-    /*
-     */
-	}, [roundNo, users, loading1]);
-
-	useEffect(() => {
-		/*let active = false;
-    if (!active && !pause) {
-      if (time !== 0) {
-        timerRef.current = setInterval(() => {
-          const secondCounter = time % 60;
-          const minuteCounter = Math.floor(time / 60);
-          setTime(time - 1);
-          sessionStorage.setItem("time-val", time - 1);
-          const computedSecond =
-            String(secondCounter).length === 1
-              ? `0${secondCounter}`
-              : secondCounter;
-          const computedMinute =
-            String(minuteCounter).length === 1
-              ? `0${minuteCounter}`
-              : minuteCounter;
-          sessionStorage.setItem(
-            "time-format",
-            computedMinute + ":" + computedSecond
-          );
-          setTimeFormat(computedMinute + ":" + computedSecond);
-          let originalTime = timeP.current;
-          // console.log(timeP.current);
-          // console.log(time);
-          const percent = 100 - ((originalTime - time) / originalTime) * 100;
-          // console.log(percent);
-          setTimePercent(percent);
-        }, 1000);
-      } else {
-        setTime(0);
-        setTimeFormat("0:00");
-        setTimePercent(0);
-        socket.emit("submit", { choice, playerName, code });
-        setDisabled(true);
-        Number(choice) === 1
-          ? setActive([true, false])
-          : setActive([false, true]);
-        sessionStorage.setItem("time-val", 0);
-        sessionStorage.setItem("time-format", "0:00");
-      }
-    }
-
-    return () => {
-      clearInterval(timerRef.current);
-      active = true;
-    };*/
-	}, [timerRef, time, pause, choice, code]);
+	}, [id, users, loading1, gameUser, loading2]);
 
 	const selectChoice = (num) => {
 		num === 1 ? setActive([true, false]) : setActive([false, true]);
@@ -211,7 +133,7 @@ const GameRounds = () => {
 
 		if (gameUser && !loading2) {
 			const updates = {};
-			updates['sessionData/' + code + '/state/' + roundNo.id + '/' + userID] = {
+			updates['sessionData/' + roomId + '/state/' + id + '/' + userID] = {
 				...gameUser,
 				isSelected: {
 					choice: num,
@@ -226,10 +148,9 @@ const GameRounds = () => {
 	};
 
 	const submitChoice = () => {
-		//cearInterval(timerID);
 		if (gameUser && !loading2) {
 			const updates = {};
-			updates['sessionData/' + code + '/state/' + roundNo.id + '/' + userID] = {
+			updates['sessionData/' + roomId + '/state/' + id + '/' + userID] = {
 				...gameUser,
 				isSubmit: {
 					choice,
@@ -253,11 +174,11 @@ const GameRounds = () => {
 		}
 	};
 
-	if (Number(roundNo.id) === 5) {
+	if (Number(id) === 5) {
 		multiplier.current = <img src={three} alt="3x" />;
-	} else if (Number(roundNo.id) === 8) {
+	} else if (Number(id) === 8) {
 		multiplier.current = <img src={five} alt="5x" />;
-	} else if (Number(roundNo.id) === 10) {
+	} else if (Number(id) === 10) {
 		multiplier.current = <img src={ten} alt="10x" />;
 	}
 
@@ -265,10 +186,8 @@ const GameRounds = () => {
 		<div className="p-1 mt-1 flex flex-col h-screen game">
 			<div className="flex flex-col items-center justify-center">
 				<div className="flex flex-row md:w-96 xs-mobile:w-9/12">
-					<FlashCard text={`Day ${roundNo.id}`} />
-					{Number(roundNo.id) === 5 ||
-					Number(roundNo.id) === 8 ||
-					Number(roundNo.id) === 10 ? (
+					<FlashCard text={`Day ${id}`} />
+					{Number(id) === 5 || Number(id) === 8 || Number(id) === 10 ? (
 						<p className="rounded-full text-center px-2 py-2 ml-2 border-5 border-yellow-300">
 							{multiplier.current}
 						</p>
@@ -305,19 +224,6 @@ const GameRounds = () => {
 					>
 						Submit
 					</button>
-					{
-						// REMOVE ME
-					}
-					<Link
-						to={{
-							pathname: `/round/${Number(roundNo.id) + 1}`,
-						}}
-					>
-						<Button
-							display={'bg-btn-bg-primary bg-center btn-lg'}
-							text={'Start Game'}
-						/>
-					</Link>
 				</div>
 			) : (
 				<Button

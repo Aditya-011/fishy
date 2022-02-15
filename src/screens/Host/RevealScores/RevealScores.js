@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 
 import FlashCard from '../../../components/Flashcard/Flashcard';
 import Icons from '../../../components/Icons/Icons';
@@ -11,31 +11,28 @@ import Fish1 from '../../../images/Fish1-new.png';
 import Fish2 from '../../../images/Fish2-new.png';
 import './RevealScores.css';
 
-import { set, ref, update, get, child, onValue } from 'firebase/database';
+import { ref, update, get, child } from 'firebase/database';
 import { database as db } from '../../../firebase';
-import { CodeContext, UserContext } from '../../../context/context';
-import useFirebaseRef from '../../../components/useFirebaseRef';
+import { CodeContext } from '../../../context/context';
+import useFirebaseRef from '../../../utils/useFirebaseRef';
 
 const RevealScores = () => {
-	const roundNo = useParams();
-	const { code } = useContext(CodeContext);
-	// const [players, setPlayers] = useState([]);
+	const { roomId, id } = useParams();
+	// const { code } = useContext(CodeContext);
 	const [players, loading] = useFirebaseRef(
-		`sessionData/${code}/state/${roundNo.id}`
+		`sessionData/${roomId}/state/${id}`
 	);
-	const [showEye, setShowEye] = useState(true);
 
-	const movetoScoreCard = () => {};
 	const clickHandler = (uId) => {
 		console.log(uId);
 		const dbRef = ref(db);
-		get(child(dbRef, `sessionData/${code}/state/${roundNo.id}/${uId}`))
+		get(child(dbRef, `sessionData/${roomId}/state/${id}/${uId}`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
 					console.log(snapshot.val());
 					const res = snapshot.val();
 					const updates = {};
-					updates[`sessionData/${code}/state/${roundNo.id}/${uId}`] = {
+					updates[`sessionData/${roomId}/state/${id}/${uId}`] = {
 						...res,
 						eye: !res.eye,
 					};
@@ -47,18 +44,7 @@ const RevealScores = () => {
 			.catch((error) => {
 				console.error(error);
 			});
-
-		// setShowEye(!showEye)
 	};
-	/* const getPlayers = () => {
-		onValue(ref(db, `sessionData/${code}/state/${roundNo.id}`), (snapshot) => {
-			console.log(`sessionData/${code}/state/${roundNo.id}`);
-			//  console.log(snapshot.val());
-			const data = snapshot.val();
-			console.log(data);
-			setPlayers(data);
-		});
-	}; */
 
 	useEffect(() => {
 		console.log(players);
@@ -67,7 +53,7 @@ const RevealScores = () => {
 	return (
 		<div className="flex flex-col items-center justify-center pt-1 h-screen reveal">
 			<div className="md:w-96 xs-mobile:w-9/12">
-				<FlashCard text={`Day ${roundNo.id}`} />
+				<FlashCard text={`Day ${id}`} />
 			</div>
 			<div className="flex mt-4 xs-mobile:flex-wrap md:flex-nowrap justify-center items-center">
 				{!loading &&
@@ -132,19 +118,19 @@ const RevealScores = () => {
 						}
 					})}
 			</div>
-			<Link to={'/host/scores'}>
+			<Link to={`/game/${roomId}/host/scores`}>
 				{' '}
 				<Button
 					text={'Scores'}
 					display={'bg-btn-bg-primary bg-center btn-lg mt-3'}
 					clickHandler={() => {
-						get(child(ref(db), `sessionData/${code}/hostProperties`))
+						get(child(ref(db), `sessionData/${roomId}/hostProperties`))
 							.then((snapshot) => {
 								if (snapshot.exists()) {
 									const res = snapshot.val();
 									console.log(res);
 									const updates = {};
-									updates[`sessionData/${code}/hostProperties`] = {
+									updates[`sessionData/${roomId}/hostProperties`] = {
 										...res,
 										showScore: true,
 									};

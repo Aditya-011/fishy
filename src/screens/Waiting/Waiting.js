@@ -2,12 +2,14 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import Button from '../../components/Button/Button';
 
 import './Waiting.css';
-import { AuthContext, CodeContext } from '../../context/context';
-import { useNavigate } from 'react-router-dom';
-import { set, ref, update, get, child, onValue } from 'firebase/database';
+import { AuthContext, CodeContext, UserContext } from '../../context/context';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ref, update, get, child } from 'firebase/database';
 import { database as db } from '../../firebase';
-import useFirebaseRef from '../../components/useFirebaseRef';
+import useFirebaseRef from '../../utils/useFirebaseRef';
+import { toast } from 'react-hot-toast';
 const Waiting = () => {
+	const user = useContext(UserContext);
 	const navigate = useNavigate();
 	const [roundNo, setRoundNo] = useState(0);
 	const [timeFormat, setTimeFormat] = useState('03:00');
@@ -16,18 +18,25 @@ const Waiting = () => {
 	const [counter, setCounter] = useState(180);
 	const [waitingMsg, setWaitingMsg] = useState('');
 
-	const { authUser } = useContext(AuthContext);
-	const { code } = useContext(CodeContext);
+	const [authUser, setAuthUser] = useState(false);
+	// const [skipRound, setSkipRound] = useState(false);
 
-	const [sessionData, loading] = useFirebaseRef(`sessionData/${code}`);
+	// const { authUser } = useContext(AuthContext);
+	// const { code } = useContext(CodeContext);
+	const { roomId } = useParams();
+
+	const [sessionData, loading] = useFirebaseRef(`sessionData/${roomId}`);
+	const [properties, loading1] = useFirebaseRef(
+		'sessions/' + roomId + '/properties'
+	);
 
 	const getRoundNo = () => {
-		get(child(ref(db), `sessionData/${code}/state`))
+		get(child(ref(db), `sessionData/${roomId}/state`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
-					const res = Object.keys(snapshot.val());
-					console.log(res[res.length - 1]);
-					setRoundNo(Number(res[res.length - 1]) + 1);
+					const res = Object.keys(snapshot.val()).at(-1);
+					console.log(res);
+					setRoundNo(Number(res) + 1);
 				} else {
 					console.log('No data available');
 				}
@@ -43,82 +52,46 @@ const Waiting = () => {
 			sessionData.hostProperties.nextRound &&
 			sessionData.hostProperties.isOver
 		) {
-			const next = Object.keys(sessionData.state).length + 1;
+			const next = roundNo;
+			const message = `Moving to day ${next}`;
 			console.log(next);
+			toast.success(message);
 			setTimeout(() => {
-				navigate(`/round/${next}`);
-			}, 2000);
+				navigate(`/game/${roomId}/round/${next}`);
+			}, 1000);
 		}
 	};
 	useEffect(() => {
-		//console.log(auth);\
 		getRoundNo();
-		if (!authUser && !loading) {
-			movetoNextRound();
-		}
+	}, [roomId]);
+	useEffect(() => {
+		movetoNextRound();
 		console.log(roundNo);
-		/*sessionStorage.removeItem("time-val");
-    sessionStorage.removeItem("time-format");
-    sessionStorage.removeItem("time-percent");
-    if (sessionStorage.getItem("time-forma"))
-      setTimeFormat(sessionStorage.getItem("time-format"));
-    if (sessionStorage.getItem("active"))
-      setActive(JSON.parse(sessionStorage.getItem("active")));
-    if (sessionStorage.getItem("counter"))
-      setCounter(Number(sessionStorage.getItem("counter")));
-    socket.emit("join-game", sessionStorage.getItem("game-code"));
-    socket.on("next-round-started", roundNumber => {
-      window.location.href = `/round/${roundNumber}`;
-    });
-    socket.on("round-number", roundNumber => setRoundNo(roundNumber));
-    socket.on("message", ({ message }) => setWaitingMsg(message));
-    socket.on("game-over", () => (window.location.href = "/gameover"));
-    if (active) {
-      if (counter > 0) {
-        timerRef.current = setInterval(() => {
-          const secondCounter = counter % 60;
-          const minuteCounter = Math.floor(counter / 60);
-          const computedSecond =
-            String(secondCounter).length === 1
-              ? `0${secondCounter}`
-              : secondCounter;
-          const computedMinute =
-            String(minuteCounter).length === 1
-              ? `0${minuteCounter}`
-              : minuteCounter;
-          setTimeFormat(computedMinute + ":" + computedSecond);
-          sessionStorage.setItem(
-            "time-format",
-            computedMinute + ":" + computedSecond
-          );
-          setCounter(counter => counter - 1);
-          sessionStorage.setItem("active", true);
-          sessionStorage.setItem("counter", counter - 1);
-        }, 1000);
-      } else {
-        setCounter(0);
-        setTimeFormat("00:00");
-      }
-    }
-    return () => {
-      clearInterval(timerRef.current);
-    };*/
 	}, [sessionData, loading]);
 
+	useEffect(() => {
+		if (properties && user) {
+			if (properties.host.userID === user.id) {
+				setAuthUser(true);
+			} else {
+				setAuthUser(false);
+			}
+		}
+	}, [properties, user, loading1]);
+
 	const startGame = () => {
-		get(child(ref(db), `sessionData/${code}/hostProperties`))
+		get(child(ref(db), `sessionData/${roomId}/hostProperties`))
 			.then((snapshot) => {
 				if (snapshot.exists()) {
 					console.log(snapshot.val());
 					const res = snapshot.val();
 					const updates = {};
-					updates[`sessionData/${code}/hostProperties`] = {
+					updates[`sessionData/${roomId}/hostProperties`] = {
 						...res,
 						nextRound: true,
 					};
 					update(ref(db), updates);
-					// updates[`sessionData/${code}/state`]
-					navigate(`/round/${roundNo}`);
+					// navigate(`/game/${roomId}/round/${roundNo}`);
 				} else {
 					console.log('No data available');
 				}
@@ -132,7 +105,10 @@ const Waiting = () => {
 		navigate('/gameover');
 	};
 
-	const skipGameRound = () => {};
+	const skipGameRound = () => {
+		setRoundNo(Number(roundNo) + 1);
+		startGame();
+	};
 
 	return (
 		<div className="flex flex-col items-center justify-center h-screen">

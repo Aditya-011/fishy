@@ -22,13 +22,11 @@ import Icons from '../../../components/Icons/Icons';
 import NavComponent from '../../../components/NavComponent';
 
 import { database as db } from '../../../firebase';
-import { ref, set, get, child, push, update } from 'firebase/database';
-import useFirebaseRef from '../../../components/useFirebaseRef';
+import { ref, set, get, child } from 'firebase/database';
 
 const GenerateLink = () => {
 	const user = useContext(UserContext);
-	const { authUser } = useContext(AuthContext);
-	const { code, setCode } = useContext(CodeContext);
+	const [code, setCode] = useState('');
 	const [waiting, setWaiting] = useState(false);
 	const [settings, showSettings] = useState(false);
 	const [rules, showRules] = useState(false);
@@ -42,7 +40,6 @@ const GenerateLink = () => {
 		for (var i = 0; i < length; i++) {
 			result += characters.charAt(Math.floor(Math.random() * charactersLength));
 		}
-		// console.log(result);
 		return result;
 	}
 
@@ -138,7 +135,7 @@ const GenerateLink = () => {
 		<div className="flex flex-col h-screen w-full">
 			<div className="flex flex-col justify-center items-start w-full">
 				<div className="block mt-2">
-					{authUser ? (
+					{true ? (
 						<Icons
 							icon={SettingIcon}
 							clickHandler={() => showSettings(!settings)}
