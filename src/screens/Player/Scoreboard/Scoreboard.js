@@ -8,7 +8,7 @@ import './Scoreboard.css';
 
 import { CodeContext } from '../../../context/context';
 
-import useFirebaseRef from '../../../hooks/useFirebaseRef';
+import useFirebaseRef from '../../../utils/useFirebaseRef';
 import { calculateScore } from '../../../utils/scoreHelper';
 
 const Scoreboard = () => {

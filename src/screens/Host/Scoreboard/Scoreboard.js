@@ -12,7 +12,7 @@ import { CodeContext } from '../../../context/context';
 
 import { ref, update, get, child, onValue, set } from 'firebase/database';
 import { database as db } from '../../../firebase';
-import useFirebaseRef from '../../../hooks/useFirebaseRef';
+import useFirebaseRef from '../../../utils/useFirebaseRef';
 import { calculateScore } from '../../../utils/scoreHelper';
 
 const Scoreboard = () => {
