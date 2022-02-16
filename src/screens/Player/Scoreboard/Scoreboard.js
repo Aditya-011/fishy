@@ -8,7 +8,7 @@ import './Scoreboard.css';
 
 import { CodeContext } from '../../../context/context';
 
-import useFirebaseRef from '../../../utils/useFirebaseRef';
+import useFirebaseRef from '../../../hooks/useFirebaseRef';
 import { calculateScore } from '../../../utils/scoreHelper';
 
 const Scoreboard = () => {
@@ -16,7 +16,10 @@ const Scoreboard = () => {
 	const { roomId } = useParams();
 	// const { code } = useContext(CodeContext);
 	const [playerData, loading] = useFirebaseRef(`sessions/${roomId}/users`);
-	const [scoreData, loading1] = useFirebaseRef(`sessionData/${roomId}/state`);
+	const [scoreData, loading1] = useFirebaseRef(
+		`sessionData/${roomId}/state`,
+		true
+	);
 	const [hostProperties, loading2] = useFirebaseRef(
 		`sessionData/${roomId}/hostProperties`
 	);
