@@ -8,15 +8,15 @@ import Button from '../../../components/Button/Button';
 import './PlayerScreen.css';
 
 import { database as db } from '../../../firebase';
-import { ref, child, get, push, update, set } from 'firebase/database';
+import { ref, update, set } from 'firebase/database';
 
 import { toast } from 'react-hot-toast';
-import useFirebaseRef from '../../../components/useFirebaseRef';
+import useFirebaseRef from '../../../utils/useFirebaseRef';
 
 const PlayerScreen = () => {
 	const Navigate = useNavigate();
 	const user = useContext(UserContext);
-	const { code, setCode } = useContext(CodeContext);
+	const [code, setCode] = useState('');
 	const [playerName, setPlayerName] = useState('');
 	const [session, loading] = useFirebaseRef(`sessions/${code}`);
 
@@ -33,8 +33,6 @@ const PlayerScreen = () => {
 					role: 'player',
 					rounds: [],
 				};
-				/* set(child(ref(db), `sessions/${code}/users`));
-				set(child(ref(db), `users`)); */
 
 				console.log(user);
 				const updates = {};
@@ -60,7 +58,6 @@ const PlayerScreen = () => {
 					},
 				});
 
-				//window.location.href = `/lobby/${code}`;
 				Navigate(`/lobby/${code}`);
 			} else {
 				console.log('No data available');

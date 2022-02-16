@@ -7,14 +7,18 @@ import Pause from "../../images/pause.png";
 import Resume from "../../images/resume.png";
 import { database as db } from "../../firebase";
 import { get, child, ref, onValue, update } from "firebase/database";
-import useFirebaseRef from "../useFirebaseRef";
+import useFirebaseRef from "../../utils/useFirebaseRef";
 import { useNavigate } from "react-router-dom";
 
-function MyTimer({ expiryTimestamp, toggle, code, round }) {
+function MyTimer({ expiryTimestamp, authUser, code, round,userID }) {
   const navigate = useNavigate();
-  const { authUser } = useContext(AuthContext);
-  const { user } = useContext(UserContext);
-  const userID = user.uid;
+  
+  useEffect(()=>
+  {
+    console.log(userID);
+  },[])
+
+
   const path = authUser
     ? `sessionData/${code}/hostProperties`
     : `sessionData/${code}/state/${round}/${userID}`;
@@ -70,9 +74,7 @@ function MyTimer({ expiryTimestamp, toggle, code, round }) {
       update(ref(db), updates);
     }
   };
-  useEffect(() => {
-    console.log(user);
-  }, []);
+ 
 
  
   return (
@@ -112,14 +114,17 @@ function MyTimer({ expiryTimestamp, toggle, code, round }) {
   );
 }
 
-const Timer = ({ timer, round }) => {
+const Timer = ({ timer, round,code,userID}) => {
   const [time, setTime] = useState(new Date());
   const [toggle, settoggle] = useState(true);
-  const { authUser } = useContext(AuthContext);
-
+  const { user } = useContext(UserContext);
+ // const userID = user.id;
   // 10 minutes timer
   // console.log(auth);
-  const { code } = useContext(CodeContext);
+  const [properties, loading1] = useFirebaseRef(
+		'sessions/' + code + '/properties'
+	);
+  const [authUser, setAuthUser] = useState(false);
   const getTime = () => {
     get(child(ref(db), `sessionData/${code}/hostProperties`))
       .then((snapshot) => {
@@ -138,11 +143,20 @@ const Timer = ({ timer, round }) => {
       });
   };
   useEffect(() => {
+		if (properties && user) {
+			if (properties.host.userID === user.id) {
+				setAuthUser(true);
+			} else {
+				setAuthUser(false);
+			}
+		}
+	}, [properties, user, loading1]);
+  useEffect(() => {
     getTime();
     console.log(timer);
     setTime(
       time.setSeconds(
-        authUser ? time.getSeconds() + timer : time.getSeconds() + timer - 0.4
+        authUser ? time.getSeconds() + timer : time.getSeconds() + timer - 2
       )
     );
     console.log(time);
@@ -154,6 +168,8 @@ const Timer = ({ timer, round }) => {
         code={code}
         toggle={{ toggle, settoggle }}
         round={round}
+        authUser={authUser}
+        userID={userID}
       />
     </div>
   );

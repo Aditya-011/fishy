@@ -12,10 +12,10 @@ function useFirebaseRef(path, once = false) {
 		if (path) {
 			const dbRef = ref(db, path);
 			let unsubscribe = onValue(dbRef, (snapshot) => {
-				if (once) unsubscribe();
 				setValue(snapshot.val());
 				setLoading(false);
 			});
+			if (once) unsubscribe();
 			return () => {
 				unsubscribe();
 			};

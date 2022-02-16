@@ -1,4 +1,10 @@
-import { auth, signInAnonymously, onAuthStateChanged } from './firebase';
+import {
+	auth,
+	signInAnonymously,
+	onAuthStateChanged,
+	database as db,
+} from './firebase';
+import { ref, onValue, update } from 'firebase/database';
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
@@ -16,94 +22,99 @@ import PlayerScoreboard from './screens/Player/Scoreboard/Scoreboard';
 import Endgame from './screens/Endgame/Endgame';
 import Waiting from './screens/Waiting/Waiting';
 
-// import { SocketContext, socket } from './context/SocketContext';
 import { UserContext, AuthContext, CodeContext } from './context/context';
-// import Routes from './Routes';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
-	const [authUser, setAuthUser] = useState(false);
+	// const [authUser, setAuthUser] = useState(false);
+	const [isUser, setIsUser] = useState(null);
 	const [user, setUser] = useState(null);
-	const [code, setCode] = useState('');
+	// const [code, setCode] = useState('');
+	console.log(user);
 
 	useEffect(() => {
 		return onAuthStateChanged(auth, (userObj) => {
 			if (userObj) {
 				// User is signed in.
-				const tempUser = userObj.toJSON();
-				console.log(tempUser);
-				setUser({
-					id: tempUser.uid,
-					user: tempUser,
-				});
+				const user = userObj.toJSON();
 				console.log(user);
+				setIsUser(user);
+				console.log(isUser);
 			} else {
 				// User is signed out.
 				console.log('hehe');
-				// setAuthUser(null);
+				setIsUser(null);
 				signInAnonymously(auth).catch((err) => {
 					alert('Unable to connect to the server. Please try again later.');
 				});
 			}
 		});
 	}, []);
-	/* const [user] = useAuthState(auth);
+
 	useEffect(() => {
-		console.log(user);
-		if (!user) {
-			signInAnonymously(auth).catch((err) => {
-				alert('Unable to connect to the server. Please try again later.');
-			});
-		}
-	}, [user]); */
-	/* useEffect(() => {
-		if (!authUser) {
-			console.log('hehe1');
+		if (!isUser) {
 			setUser(null);
 			return;
 		}
-		// console.log(authUser.uid);
-		const userRef = ref(database, `/users/${authUser.uid}`);
-		// console.log(userRef);
-		const update = (snapshot) => {
-			// console.log(snapshot);
-      if(snapshot.exists()){
-        setUser({
-          id: authUser.uid,
-          authUser,
-          setAuthUser,
-        });
-      }
-			// console.log(user);
-		};
-		onValue(userRef, update);
+		const userRef = ref(db, `/users/${isUser.uid}`);
+		let unsubscribe = onValue(userRef, (snapshot) => {
+			if (snapshot.child('name').exists()) {
+				console.log('jnsjnsdjn');
+				console.log(snapshot.val());
+				console.log({
+					...snapshot.val(),
+					id: isUser.uid,
+					isUser,
+				});
+				console.log(isUser);
+				setUser({
+					...snapshot.val(),
+					id: isUser.uid,
+					isUser,
+				});
+				console.log(user);
+			} else {
+				update(userRef, {
+					name: 'tempUser',
+				});
+			}
+		});
 		return () => {
-			off(userRef, update);
+			unsubscribe();
 		};
-	}, [authUser]); */
+	}, [isUser]);
+	console.log(user);
 	return (
 		<BrowserRouter>
 			<UserContext.Provider value={user}>
-				<AuthContext.Provider value={{ authUser, setAuthUser }}>
-					<CodeContext.Provider value={{ code, setCode }}>
-						<Toaster position="top-right" reverseOrder={false} />
-						{/* <Routes code={code} setcode={setcode}></Routes> */}
-						<Routes>
-							<Route path="/" exact element={<Home />} />
-							<Route path="/game" exact element={<Intro />} />
-							<Route path="/admin/link" exact element={<GenerateLink />} />
-							<Route path="/Rules" exact element={<Carousel />} />
-							<Route path="/lobby/:id" element={<Lobby />} />
-							<Route path="/waiting" element={<Waiting />} />
-							<Route path="/round/:id" element={<Game />} />
-							<Route path="/host/results/:id" element={<RevealScores />} />
-							<Route path="/player/results/:id" element={<SeeResults />} />
-							<Route path="/host/scores/" element={<Scoreboard />} />
-							<Route path="/player/scores/" element={<PlayerScoreboard />} />
-							<Route path="/gameover" element={<Endgame />} />
-						</Routes>
-					</CodeContext.Provider>
-				</AuthContext.Provider>
+				{/* <AuthContext.Provider value={{ authUser, setAuthUser }}> */}
+				{/* <CodeContext.Provider value={{ code, setCode }}> */}
+				<Toaster position="top-right" reverseOrder={false} />
+				<Routes>
+					<Route path="/" exact element={<Home />} />
+					<Route path="/home" exact element={<Intro />} />
+					<Route path="/admin/link" exact element={<GenerateLink />} />
+					<Route path="/Rules" exact element={<Carousel />} />
+					<Route path="/lobby/:id" element={<Lobby />} />
+					<Route path="/game/:roomId/round/:id" element={<Game />} />
+					<Route
+						path="/game/:roomId/host/results/:id"
+						element={<RevealScores />}
+					/>
+					<Route
+						path="/game/:roomId/player/results/:id"
+						element={<SeeResults />}
+					/>
+					<Route path="/game/:roomId/host/scores/" element={<Scoreboard />} />
+					<Route
+						path="/game/:roomId/player/scores/"
+						element={<PlayerScoreboard />}
+					/>
+					<Route path="/game/:roomId/waiting" element={<Waiting />} />
+					<Route path="/gameover" element={<Endgame />} />
+				</Routes>
+				{/* </CodeContext.Provider> */}
+				{/* </AuthContext.Provider> */}
 			</UserContext.Provider>
 		</BrowserRouter>
 	);

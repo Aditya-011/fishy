@@ -1,8 +1,8 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import FlashCard from '../../components/Flashcard/Flashcard';
 import Button from '../../components/Button/Button';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { UserContext, AuthContext, CodeContext } from '../../context/context';
+import { useNavigate, useParams } from 'react-router-dom';
+import { UserContext, CodeContext } from '../../context/context';
 import './Lobby.css';
 import { database as db } from '../../firebase';
 import {
@@ -17,28 +17,20 @@ import {
 	doc,
 	set,
 } from 'firebase/database';
-import useFirebaseRef from '../../components/useFirebaseRef';
+import useFirebaseRef from '../../utils/useFirebaseRef';
 import toast from 'react-hot-toast';
 
 const Lobby = () => {
 	const navigate = useNavigate();
-	const [isStarted, setisStarted] = useState(false);
-	const { authUser, setAuthUser } = useContext(AuthContext);
-	const { code } = useContext(CodeContext);
+	const [authUser, setAuthUser] = useState(false);
+	const { id } = useParams();
+	const code = id;
 	const user = useContext(UserContext);
 	const [properties, loading] = useFirebaseRef(
 		'sessions/' + code + '/properties'
 	);
 	const [players] = useFirebaseRef('sessions/' + code + '/users');
-	/* var Players;
-	const [players, setPlayers] = useState([]); */
-	// const { id } = useParams();
-	/* let code = id;
-	if (!code) {
-		if (location.state) code = location.state.code;
-		console.log(code);
-	}
-	console.log(code); */
+
 	const clickHandler = () => {
 		if (properties && Object.keys(players).length === 2) {
 			//console.log(snapshot.val());
@@ -58,7 +50,7 @@ const Lobby = () => {
 	const isAuthUser = () => {
 		if (properties) {
 			if (properties.host.userID === user.id) {
-				setAuthUser(true); // console.log(properties);
+				setAuthUser(true);
 			}
 		}
 	};
@@ -70,30 +62,7 @@ const Lobby = () => {
 			Object.entries(players).forEach((element) => {
 				console.log(element);
 			});
-			/* set(
-				ref(
-					db,
-					'sessionData/' + code + '/state/1/' + userID
-				),
-				{
-					eye: false,
-					name,
-					indivScore: 0,
-					isSelected: {
-						status: false,
-						choice: 0,
-					},
-					isSubmit: {
-						status: false,
-						choice: 0,
-					},
-				}
-			); */
-			navigate(`/round/${1}`, {
-				state: {
-					code,
-				},
-			});
+			navigate(`/game/${code}/round/${1}`, { replace: true });
 		}
 	};
 
@@ -123,11 +92,13 @@ const Lobby = () => {
 					: console.log(1)}
 			</ul>
 			{authUser && !loading ? (
-				<Button
-					display={'bg-btn-bg-primary bg-center btn-lg'}
-					text={'Start Game'}
-					clickHandler={clickHandler}
-				/>
+				players && Object.keys(players).length === 2 ? (
+					<Button
+						display={'bg-btn-bg-primary bg-center btn-lg'}
+						text={'Start Game'}
+						clickHandler={clickHandler}
+					/>
+				) : null
 			) : null}
 		</div>
 	);

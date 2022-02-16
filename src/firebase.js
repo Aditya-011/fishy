@@ -27,4 +27,3 @@ if (isDev) {
 }
 
 export { signInAnonymously, onAuthStateChanged };
-// export { ref, onValue, off, child, update };
